@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:26-alpine
 RUN mkdir /site && chown 1001:1001 /site
 USER 1001:1001
 ENV HOME=/tmp
