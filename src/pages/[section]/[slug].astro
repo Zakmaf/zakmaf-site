@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getPosts } from '../../lib/ghost.js';
-import { LABELS } from '../../lib/site.js';
+import { existsSync } from 'node:fs';
+import { LABELS, AUTHOR, SOCIALS } from '../../lib/site.js';
 export async function getStaticPaths() {
   const posts = await getPosts();
   const link = (p) => (p ? { title: p.title, href: `/${p.section}/${p.slug}/` } : null);
@@ -15,6 +16,9 @@ export async function getStaticPaths() {
   });
 }
 const { post, newer, older } = Astro.props;
+const hasPhoto = existsSync(`public${AUTHOR.photo}`);
+const youtube = SOCIALS.find((s) => s.label === 'YouTube')?.url;
+const github = SOCIALS.find((s) => s.label === 'GitHub')?.url;
 const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
   day: 'numeric', month: 'long', year: 'numeric',
 });
@@ -33,12 +37,38 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
     {post.feature_image && (post.videoUrl ? (
       <a class="cover-link" href={post.videoUrl} aria-label={`Regarder : ${post.title}`}>
         <img class="cover" src={post.feature_image} alt="" />
-        <span class="play" aria-hidden="true"></span>
+        <span class="watch-pill" aria-hidden="true">Regarder la vidéo</span>
       </a>
     ) : (
       <img class="cover" src={post.feature_image} alt="" />
     ))}
     <div class="body"><Fragment set:html={post.html} /></div>
+    {post.files.length > 0 && (
+      <aside class="files">
+        <span class="files-head">Les fichiers de cette vidéo</span>
+        {post.files.map((f) => (
+          <a class="files-item" href={f.href}>
+            <span class="files-name">
+              {f.file && <span class="files-path">{f.file}</span>}
+              <span>{f.title}</span>
+            </span>
+            {f.lang && <span class="file-lang">{f.lang}</span>}
+          </a>
+        ))}
+      </aside>
+    )}
+    <section class="author" aria-label="L'auteur">
+      {hasPhoto && <img src={AUTHOR.photo} alt="" width="72" height="72" loading="lazy" />}
+      <div>
+        <p class="author-name"><a href="/a-propos/">{AUTHOR.name}</a></p>
+        <p class="author-bio">{AUTHOR.short}</p>
+        <p class="author-links">
+          {youtube && <a href={youtube} rel="me noopener">S'abonner sur YouTube</a>}
+          {github && <a href={github} rel="me noopener">GitHub</a>}
+          <a href="/rss.xml">RSS</a>
+        </p>
+      </div>
+    </section>
   </article>
   {(older || newer) && (
     <nav class="post-nav narrow" aria-label="Autres articles">

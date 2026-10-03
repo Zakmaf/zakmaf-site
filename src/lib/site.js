@@ -16,6 +16,7 @@ export const INTROS = {
 export const AUTHOR = {
   name: 'Zakaria Maftah',
   photo: '/zak.jpg',
+  short: 'Je construis, teste et explique des technologies utiles, en français.',
   bio: "Je construis, teste et explique des technologies utiles, en français : auto-hébergement, alternatives open source, homelabs, serveurs et intelligence artificielle. Ce site prolonge mes vidéos avec les articles, les fichiers de configuration et les notes qui vont avec.",
 };
 

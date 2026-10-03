@@ -60,7 +60,7 @@ function unembed(html, mainId) {
       skipped = true;
       return '';
     }
-    return `<p class="yt-link"><a href="${watchUrl(id)}">Regarder la vidéo sur YouTube →</a></p>`;
+    return `<p class="yt-link" data-yt="${id}"><a href="${watchUrl(id)}">Regarder la vidéo sur YouTube →</a></p>`;
   });
 }
 
@@ -135,7 +135,7 @@ async function load() {
   if (OFFLINE) {
     const n = Number(process.env.MOCK_POSTS) || OFFLINE_POSTS;
     console.warn(`GHOST_API_URL absent : construction hors ligne avec ${n} articles fictifs`);
-    return Promise.all(mockPosts(n).map(prepare));
+    return relate(await Promise.all(mockPosts(n).map(prepare)));
   }
   let page = 1;
   while (page) {
@@ -148,7 +148,29 @@ async function load() {
   }
   const mock = Number(process.env.MOCK_POSTS || 0);
   if (mock) posts.push(...mockPosts(mock));
-  return Promise.all(posts.map(prepare));
+  return relate(await Promise.all(posts.map(prepare)));
+}
+
+// Liens croisés automatiques : un article hors Vidéos qui intègre la vidéo d'un article Vidéos
+// pointe vers cet article (au lieu de YouTube), et l'article Vidéos liste ces fichiers.
+const YT_LINK = /<p class="yt-link" data-yt="([\w-]{11})"><a href="[^"]*">[^<]*<\/a><\/p>/g;
+
+function relate(posts) {
+  const byVideo = new Map(posts.filter((p) => p.videoId).map((p) => [p.videoId, p]));
+  for (const p of posts) p.files = [];
+  for (const p of posts) {
+    if (p.section === 'videos' || !p.html) continue;
+    p.html = p.html.replace(YT_LINK, (tag, id) => {
+      const video = byVideo.get(id);
+      if (!video) return tag;
+      if (!p.videoPost) {
+        p.videoPost = { title: video.title, href: `/videos/${video.slug}/` };
+        video.files.push({ title: p.title, href: `/${p.section}/${p.slug}/`, file: p.code?.file ?? null, lang: p.code?.lang ?? null });
+      }
+      return `<p class="yt-link" data-yt="${id}"><a href="/videos/${video.slug}/">Voir l'article de la vidéo →</a></p>`;
+    });
+  }
+  return posts;
 }
 
 async function prepare(p) {

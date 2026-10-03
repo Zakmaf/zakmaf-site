@@ -189,9 +189,15 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 
 .cover-link { display: block; position: relative; margin: 0 0 2rem; border-radius: 8px; overflow: hidden; }
 .cover-link .cover { margin: 0; border-radius: 0; }
-.cover-link .play { position: absolute; inset: auto auto 1rem 1rem; width: 3.25rem; height: 3.25rem; border-radius: 50%; background: rgba(0, 0, 0, .62); display: grid; place-items: center; transition: background .15s; }
-.cover-link .play::after { content: ''; margin-left: .22rem; border-left: 1rem solid #fff; border-top: .62rem solid transparent; border-bottom: .62rem solid transparent; }
-.cover-link:hover .play { background: var(--accent); }
+/* Pastille « Regarder la vidéo » sur la couverture d'un article Vidéos. */
+.watch-pill {
+  position: absolute; left: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: .55rem;
+  min-height: 2.75rem; padding: 0 1.1rem 0 .95rem; border-radius: 999px;
+  background: var(--accent); color: var(--on-accent); font: 600 .95rem/1 var(--sans);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.watch-pill::before { content: ''; border-left: .7rem solid currentColor; border-top: .42rem solid transparent; border-bottom: .42rem solid transparent; }
+.cover-link:hover .watch-pill { filter: brightness(1.08); }
 
 article .body { font: 1.2rem/1.65 var(--serif); }
 article .body h2 { font-size: 1.7rem; line-height: 1.25; margin: 2.5rem 0 .75rem; }
@@ -230,7 +236,26 @@ article .body pre code { font-size: 1em; background: none; border: 0; padding: 0
 }
 .copy:hover { color: var(--fg); }
 
-.post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+/* Fichiers associés à une vidéo, puis bloc auteur, en fin d'article. */
+.files { margin-top: 2.5rem; overflow: hidden; border: 1px solid var(--card-border); border-radius: 10px; background: var(--surface); }
+.files-head { display: block; padding: .55rem .9rem; background: var(--card-head-bg); color: var(--card-head-fg); font: 600 .72rem/1.6 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.files-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem .9rem; color: var(--fg); text-decoration: none; }
+.files-item + .files-item { border-top: 1px solid var(--line); }
+.files-item:hover { color: var(--accent); }
+.files-name { display: flex; flex-direction: column; min-width: 0; }
+.files-path { font: 600 .85rem/1.5 var(--mono); }
+.files-name span:last-child { font-size: .9rem; color: var(--muted); }
+.files-item:hover .files-name span:last-child { color: inherit; }
+
+.author { display: flex; gap: 1.1rem; align-items: center; margin-top: 2.5rem; padding-block: 1.4rem; border-top: 2px solid var(--fg); border-bottom: 1px solid var(--line); }
+.author img { width: 4.5rem; height: 4.5rem; border-radius: 50%; object-fit: cover; flex: none; }
+.author p { margin: 0; }
+.author-name { font: 650 1.2rem/1.3 var(--serif); }
+.author-name a { color: var(--fg); text-decoration: none; }
+.author-bio { color: var(--muted); font-size: .95rem; }
+.author-links { display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; margin-top: .3rem; font-weight: 600; font-size: .95rem; }
+
+.post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0; padding-top: 1.5rem; }
 .post-nav a { text-decoration: none; color: var(--fg); font: 600 1.1rem/1.3 var(--serif); }
 .post-nav a:hover { color: var(--accent); }
 .post-nav span { display: block; font: .8rem/1.6 var(--sans); color: var(--muted); }
