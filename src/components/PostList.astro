@@ -1,0 +1,24 @@
+---
+const { posts } = Astro.props;
+const fmt = (d) =>
+  new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+{posts.length === 0 ? (
+  <p class="meta">Aucun article pour le moment.</p>
+) : (
+  <ul class="post-list">
+    {posts.map((p) => (
+      <li>
+        <div class="text">
+          <a class="title" href={`/${p.section}/${p.slug}/`}>{p.title}</a>
+          <div class="meta">
+            {fmt(p.published_at)}
+            {p.reading_time ? ` · ${p.reading_time} min de lecture` : ''}
+          </div>
+          {p.excerpt && <p>{p.excerpt}</p>}
+        </div>
+        <img src={p.feature_image ?? `/covers/${p.section}.svg`} alt="" loading="lazy" />
+      </li>
+    ))}
+  </ul>
+)}

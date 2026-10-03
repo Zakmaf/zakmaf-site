@@ -1,0 +1,25 @@
+---
+import { existsSync } from 'node:fs';
+import Base from '../layouts/Base.astro';
+import { getPage } from '../lib/ghost.js';
+import { AUTHOR, SOCIALS } from '../lib/site.js';
+const page = await getPage('a-propos');
+const hasPhoto = existsSync(`public${AUTHOR.photo}`);
+---
+<Base title="À propos" description={AUTHOR.bio}>
+  <article class="narrow">
+    <header class="post-head">
+      <h1>{page?.title ?? 'À propos'}</h1>
+    </header>
+    {hasPhoto && !page?.feature_image && (
+      <img src={AUTHOR.photo} alt={AUTHOR.name} width="160" height="160" style="border-radius:50%;object-fit:cover;margin-bottom:1.5rem" />
+    )}
+    {page?.feature_image && <img class="cover" src={page.feature_image} alt="" />}
+    <div class="body">
+      {page ? <Fragment set:html={page.html} /> : <p>{AUTHOR.name}. {AUTHOR.bio}</p>}
+    </div>
+    <p class="socials" style="margin-top:2rem">
+      {SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
+    </p>
+  </article>
+</Base>

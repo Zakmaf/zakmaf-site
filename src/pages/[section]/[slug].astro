@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts } from '../../lib/ghost.js';
+import { LABELS } from '../../lib/site.js';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const link = (p) => (p ? { title: p.title, href: `/${p.section}/${p.slug}/` } : null);
+  return posts.map((p) => {
+    const siblings = posts.filter((q) => q.section === p.section);
+    const i = siblings.indexOf(p);
+    return {
+      params: { section: p.section, slug: p.slug },
+      props: { post: p, newer: link(siblings[i - 1]), older: link(siblings[i + 1]) },
+    };
+  });
+}
+const { post, newer, older } = Astro.props;
+const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
+  day: 'numeric', month: 'long', year: 'numeric',
+});
+---
+<Base title={post.title} image={post.feature_image} description={post.custom_excerpt ?? post.excerpt}>
+  <article class="narrow">
+    <header class="post-head">
+      <a class="crumb" href={`/${post.section}/`}>{LABELS[post.section]}</a>
+      <h1>{post.title}</h1>
+      <div class="meta">
+        <time datetime={post.published_at}>{date}</time>
+        {post.reading_time ? ` · ${post.reading_time} min de lecture` : ''}
+      </div>
+      {post.videoUrl && <p class="watch"><a href={post.videoUrl}>Regarder la vidéo sur YouTube →</a></p>}
+    </header>
+    {post.feature_image && (post.videoUrl ? (
+      <a class="cover-link" href={post.videoUrl} aria-label={`Regarder : ${post.title}`}>
+        <img class="cover" src={post.feature_image} alt="" />
+        <span class="play" aria-hidden="true"></span>
+      </a>
+    ) : (
+      <img class="cover" src={post.feature_image} alt="" />
+    ))}
+    <div class="body"><Fragment set:html={post.html} /></div>
+  </article>
+  {(older || newer) && (
+    <nav class="post-nav narrow" aria-label="Autres articles">
+      {older && <a class="prev" href={older.href}><span>← Précédent</span>{older.title}</a>}
+      {newer && <a class="next" href={newer.href}><span>Suivant →</span>{newer.title}</a>}
+    </nav>
+  )}
+</Base>

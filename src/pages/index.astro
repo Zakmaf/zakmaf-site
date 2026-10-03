@@ -1,0 +1,58 @@
+---
+import { existsSync, readFileSync } from 'node:fs';
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { getPosts, SECTIONS } from '../lib/ghost.js';
+import { SITE, LABELS, INTROS, AUTHOR, SOCIALS } from '../lib/site.js';
+const posts = await getPosts();
+// Sections affichées sur l'accueil : uniquement celles qui ont au moins un article.
+const sections = SECTIONS.map((slug) => ({ slug, posts: posts.filter((p) => p.section === slug) }))
+  .filter((s) => s.posts.length > 0);
+const hasPhoto = existsSync(`public${AUTHOR.photo}`);
+const video = existsSync('src/data/youtube.json')
+  ? JSON.parse(readFileSync('src/data/youtube.json', 'utf8'))
+  : null;
+const videoUrl = video && `https://www.youtube.com/watch?v=${video.id}`;
+const channelUrl = SOCIALS.find((s) => s.label === 'YouTube')?.url;
+const fmt = (d) =>
+  new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base description={AUTHOR.bio}>
+  <div class="home-top">
+    <section class="hero">
+      {hasPhoto && <img src={AUTHOR.photo} alt={AUTHOR.name} width="128" height="128" />}
+      <div>
+        <h1>{SITE.title}</h1>
+        <p class="tagline">{SITE.description}</p>
+        <p class="bio"><strong>{AUTHOR.name}.</strong> {AUTHOR.bio} <a href="/a-propos/">En savoir plus</a></p>
+        <p class="socials">
+          {SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
+        </p>
+      </div>
+    </section>
+    {video && (
+      <section class="latest">
+        <div class="section-head">
+          <h2>Dernière vidéo</h2>
+          {channelUrl && <a href={channelUrl}>La chaîne →</a>}
+        </div>
+        <a class="thumb" href={videoUrl} aria-label={`Regarder : ${video.title}`}>
+          {video.hasImage && <img src={`/youtube-latest.jpg?v=${video.id}`} alt="" />}
+          <span class="play" aria-hidden="true"></span>
+        </a>
+        <a class="title" href={videoUrl}>{video.title}</a>
+        {video.published && <div class="meta">{fmt(video.published)} · YouTube</div>}
+      </section>
+    )}
+  </div>
+  {sections.map((s) => (
+    <section>
+      <div class="section-head">
+        <h2>{LABELS[s.slug]}</h2>
+        <a href={`/${s.slug}/`}>Tout voir →</a>
+      </div>
+      <p class="intro">{INTROS[s.slug]}</p>
+      <PostList posts={s.posts.slice(0, 4)} />
+    </section>
+  ))}
+</Base>
