@@ -45,10 +45,12 @@ const fmt = (d) =>
       </section>
     )}
   </div>
-  {sections.map((s) => (
+  {sections.map((s, i) => (
     <section>
       <div class="section-head">
+        <span class="num">{String(i + 1).padStart(2, '0')}</span>
         <h2>{LABELS[s.slug]}</h2>
+        <span class="rule" aria-hidden="true"></span>
         <a href={`/${s.slug}/`}>Tout voir →</a>
       </div>
       <p class="intro">{INTROS[s.slug]}</p>

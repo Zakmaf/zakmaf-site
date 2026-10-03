@@ -1,6 +1,7 @@
 ---
 import '@fontsource-variable/newsreader';
 import '@fontsource-variable/newsreader/wght-italic.css';
+import '@fontsource-variable/jetbrains-mono';
 import { SITE, LABELS, SOCIALS, AUTHOR } from '../lib/site.js';
 import '../styles/global.css';
 const { title, description = SITE.description, image } = Astro.props;
@@ -10,6 +11,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 // Image de partage : couverture de l'article, sinon image par défaut (dimensions connues).
 const ogImage = new URL(image || '/og-default.png', Astro.site);
 const ogDefault = !image;
+// Signature « zakmaf.net » : point en paprika, extension en italique.
+const [brandName, brandTld] = SITE.brand.split('.');
+const year = new Date().getFullYear();
 ---
 <!doctype html>
 <html lang="fr">
@@ -44,7 +48,7 @@ const ogDefault = !image;
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/">{SITE.brand}</a>
+      <a class="brand" href="/">{brandName}<span class="dot">.</span><span class="tld">{brandTld}</span></a>
       <nav>
         {Object.entries(LABELS).map(([slug, label]) => (
           <a href={`/${slug}/`} aria-current={current === slug ? 'page' : undefined}>{label}</a>
@@ -55,8 +59,23 @@ const ogDefault = !image;
     </header>
     <main><slot /></main>
     <footer class="site-footer">
-      <span>© {new Date().getFullYear()} {AUTHOR.name}</span>
-      <span class="socials">{SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}<a href="/rss.xml">RSS</a></span>
+      <div class="footer-inner">
+        <div class="footer-id">
+          <a class="brand" href="/">{brandName}<span class="dot">.</span><span class="tld">{brandTld}</span></a>
+          <p class="tagline">{SITE.description}</p>
+        </div>
+        <div class="footer-col">
+          <span class="label">Sections</span>
+          {Object.entries(LABELS).map(([slug, label]) => <a href={`/${slug}/`}>{label}</a>)}
+          <a href="/a-propos/">À propos</a>
+        </div>
+        <div class="footer-col">
+          <span class="label">Ailleurs</span>
+          {SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
+          <a href="/rss.xml">RSS</a>
+        </div>
+        <p class="footer-legal">© {year} {AUTHOR.name} · <a href="https://github.com/Zakmaf/zakmaf-site">code source sur GitHub</a></p>
+      </div>
     </footer>
     <script is:inline>
       const root = document.documentElement;
