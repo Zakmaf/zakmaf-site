@@ -1,5 +1,6 @@
 import { codeToHtml } from 'shiki';
 import { codeLight, codeDark } from './code-theme.js';
+import { imageInfo, optimizeHtml } from './images.js';
 
 const API = process.env.GHOST_API_URL;
 const KEY = process.env.GHOST_CONTENT_KEY;
@@ -188,8 +189,9 @@ async function prepare(p) {
   return {
     ...p,
     excerpt: p.custom_excerpt || summarize(textOf(p.html)),
-    html: await highlight(unembed(localize(p.html), videoId)),
+    html: await optimizeHtml(await highlight(unembed(localize(p.html), videoId))),
     feature_image: localize(p.feature_image),
+    feature: await imageInfo(localize(p.feature_image)),
     section,
     topics,
     videoId,
@@ -222,5 +224,6 @@ export async function getPage(slug) {
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Ghost API ${res.status} on page ${slug}`);
   const page = (await res.json()).pages[0];
-  return { ...page, html: await highlight(unembed(localize(page.html), null)), feature_image: localize(page.feature_image) };
+  const image = localize(page.feature_image);
+  return { ...page, html: await optimizeHtml(await highlight(unembed(localize(page.html), null))), feature_image: image, feature: await imageInfo(image) };
 }

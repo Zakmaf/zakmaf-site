@@ -1,4 +1,5 @@
 ---
+import { imgProps, SIZES } from '../lib/images.js';
 const { posts } = Astro.props;
 const fmt = (d) =>
   new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -29,7 +30,7 @@ const fmt = (d) =>
         <li>
           {p.feature_image && (
             <a class="thumb" href={`/${p.section}/${p.slug}/`} tabindex="-1" aria-hidden="true">
-              <img src={p.feature_image} alt="" loading="lazy" />
+              <img src={p.feature_image} alt="" loading="lazy" decoding="async" {...imgProps(p.feature, SIZES.thumb)} />
               {p.videoId && <span class="play"></span>}
             </a>
           )}

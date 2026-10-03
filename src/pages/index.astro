@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import TopicChips from '../components/TopicChips.astro';
 import { getPosts, getTopics, SECTIONS } from '../lib/ghost.js';
+import { imgProps, SIZES } from '../lib/images.js';
 import { SITE, LABELS, INTROS, AUTHOR, SOCIALS } from '../lib/site.js';
 const posts = await getPosts();
 const topics = await getTopics();
@@ -26,6 +27,7 @@ const featured = lead
       href: `/${lead.section}/${lead.slug}/`,
       title: lead.title,
       image: lead.feature_image ?? (lead.videoId && lead.videoId === yt?.id ? ytImage : null) ?? `/covers/${lead.section}.svg`,
+      info: lead.feature_image ? lead.feature : null,
       date: lead.published_at,
       kind: lead.videoUrl ? 'Vidéo + article' : LABELS[lead.section],
       play: Boolean(lead.videoUrl),
@@ -65,7 +67,7 @@ const sections = SECTIONS.map((slug) => ({
           <span class="label muted">{featured.kind}</span>
         </div>
         <a class="featured-cover" href={featured.href} tabindex="-1" aria-hidden="true">
-          {featured.image && <img src={featured.image} alt="" />}
+          {featured.image && <img src={featured.image} alt="" {...imgProps(featured.info, SIZES.featured)} />}
           {featured.play && <span class="play"></span>}
         </a>
         <h2><a href={featured.href}>{featured.title}</a></h2>

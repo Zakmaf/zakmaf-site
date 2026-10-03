@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getPosts } from '../../lib/ghost.js';
+import { imgProps, SIZES } from '../../lib/images.js';
 import TopicChips from '../../components/TopicChips.astro';
 import { existsSync } from 'node:fs';
 import { LABELS, AUTHOR, SOCIALS } from '../../lib/site.js';
@@ -40,11 +41,11 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
     </header>
     {post.feature_image && (post.videoUrl ? (
       <a class="cover-link" href={post.videoUrl} aria-label={`Regarder : ${post.title}`}>
-        <img class="cover" src={post.feature_image} alt="" />
+        <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
         <span class="watch-pill" aria-hidden="true">Regarder la vidéo</span>
       </a>
     ) : (
-      <img class="cover" src={post.feature_image} alt="" />
+      <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
     ))}
     <div class="body"><Fragment set:html={post.html} /></div>
     {post.files.length > 0 && (
