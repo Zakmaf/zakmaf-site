@@ -1,4 +1,5 @@
 import { codeToHtml } from 'shiki';
+import { codeLight, codeDark } from './code-theme.js';
 
 const API = process.env.GHOST_API_URL;
 const KEY = process.env.GHOST_CONTENT_KEY;
@@ -66,7 +67,7 @@ function unembed(html, mainId) {
 
 const shikiOptions = (lang) => ({
   lang,
-  themes: { light: 'github-light', dark: 'github-dark' },
+  themes: { light: codeLight, dark: codeDark },
   defaultColor: false,
 });
 
