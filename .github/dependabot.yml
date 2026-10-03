@@ -1,10 +1,21 @@
 version: 2
 updates:
+  # Correctifs et versions mineures regroupés en une PR ; chaque version majeure a sa propre PR.
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
+    groups:
+      npm:
+        update-types: [minor, patch]
   - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
     directory: /
     schedule:
       interval: monthly
