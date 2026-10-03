@@ -126,7 +126,10 @@ function mockPosts(n) {
     feature_image: i % 2 ? '/mock.svg' : null,
     published_at: new Date(Date.now() - (i + 1) * 3 * 864e5).toISOString(),
     reading_time: 2 + (i % 9),
-    tags: [{ slug: SECTIONS[i % SECTIONS.length] }],
+    tags: [
+      { slug: SECTIONS[i % SECTIONS.length], name: SECTIONS[i % SECTIONS.length] },
+      { slug: ['docker', 'homelab', 'reseau'][i % 3], name: ['Docker', 'Homelab', 'Réseau'][i % 3] },
+    ],
   }));
 }
 
@@ -175,6 +178,10 @@ function relate(posts) {
 
 async function prepare(p) {
   const section = SECTIONS.find((s) => p.tags.some((t) => t.slug === s)) ?? 'blog';
+  // Thèmes : tags publics de Ghost, hors sections et hors tags internes (« #… »).
+  const topics = p.tags
+    .filter((t) => !SECTIONS.includes(t.slug) && t.visibility !== 'internal' && !t.name?.startsWith('#'))
+    .map((t) => ({ slug: t.slug, name: t.name ?? t.slug }));
   // Vidéo du post : première vidéo YouTube citée, uniquement dans la section Vidéos.
   const videoId = section === 'videos' ? ((p.html || '').match(YT)?.[1] ?? null) : null;
   return {
@@ -183,10 +190,24 @@ async function prepare(p) {
     html: await highlight(unembed(localize(p.html), videoId)),
     feature_image: localize(p.feature_image),
     section,
+    topics,
     videoId,
     videoUrl: videoId ? watchUrl(videoId) : null,
     code: section === 'boilerplate' ? await codePreview(p.html) : null,
   };
+}
+
+// Thèmes utilisés, du plus fréquent au moins fréquent.
+export async function getTopics() {
+  const counts = new Map();
+  for (const p of await getPosts()) {
+    for (const t of p.topics) {
+      const c = counts.get(t.slug) ?? { ...t, count: 0 };
+      c.count++;
+      counts.set(t.slug, c);
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'fr'));
 }
 
 let cache;

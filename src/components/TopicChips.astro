@@ -1,0 +1,11 @@
+---
+// Puces de thèmes ; « count » affiche le nombre d'articles.
+const { topics, count = false } = Astro.props;
+---
+{topics.length > 0 && (
+  <ul class="chips">
+    {topics.map((t) => (
+      <li><a href={`/themes/${t.slug}/`}>{t.name}{count && <span class="chip-count">{t.count}</span>}</a></li>
+    ))}
+  </ul>
+)}

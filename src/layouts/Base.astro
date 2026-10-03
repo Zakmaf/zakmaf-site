@@ -3,6 +3,7 @@ import '@fontsource-variable/newsreader';
 import '@fontsource-variable/newsreader/wght-italic.css';
 import '@fontsource-variable/jetbrains-mono';
 import { SITE, LABELS, SOCIALS, AUTHOR } from '../lib/site.js';
+import { getTopics } from '../lib/ghost.js';
 import '../styles/global.css';
 const { title, description = SITE.description, image } = Astro.props;
 const fullTitle = title ? `${title} – ${SITE.title}` : SITE.homeTitle;
@@ -14,6 +15,7 @@ const ogDefault = !image;
 // Signature « zakmaf.net » : point en paprika, extension en italique.
 const [brandName, brandTld] = SITE.brand.split('.');
 const year = new Date().getFullYear();
+const hasTopics = (await getTopics()).length > 0;
 ---
 <!doctype html>
 <html lang="fr">
@@ -53,6 +55,7 @@ const year = new Date().getFullYear();
         {Object.entries(LABELS).map(([slug, label]) => (
           <a href={`/${slug}/`} aria-current={current === slug ? 'page' : undefined}>{label}</a>
         ))}
+        {hasTopics && <a href="/themes/" aria-current={current === 'themes' ? 'page' : undefined}>Thèmes</a>}
         <a href="/a-propos/" aria-current={current === "a-propos" ? "page" : undefined}>À propos</a>
         <button id="theme-toggle" type="button" aria-label="Changer de thème">◐</button>
       </nav>
@@ -67,6 +70,7 @@ const year = new Date().getFullYear();
         <div class="footer-col">
           <span class="label">Sections</span>
           {Object.entries(LABELS).map(([slug, label]) => <a href={`/${slug}/`}>{label}</a>)}
+          {hasTopics && <a href="/themes/">Thèmes</a>}
           <a href="/a-propos/">À propos</a>
         </div>
         <div class="footer-col">
