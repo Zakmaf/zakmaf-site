@@ -16,8 +16,8 @@ Chaîne de publication :
    de dernière modification des articles et pages (Content API, `limit=1`), et toutes les
    15 itérations le flux RSS de la chaîne YouTube.
 2. Au moindre changement : `npm run build`, copie des images de Ghost dans
-   `dist/content/images`, puis `publish.mjs` remplace le contenu de `/out` sans période de
-   site vide.
+   `dist/content/images` et de leurs variantes WebP dans `dist/content/variants`, puis
+   `publish.mjs` remplace le contenu de `/out` sans période de site vide.
 3. Un serveur web sert `/out` en lecture seule.
 
 L'image Docker ne contient que le code : le site est généré au démarrage du conteneur.
@@ -30,6 +30,7 @@ la mise en production est un nouveau tirage manuel de l'image par le mainteneur.
 |---|---|
 | `src/lib/ghost.js` | Accès à Ghost, mode hors ligne, coloration Shiki, liens Vidéos ↔ Boilerplate, thèmes (tags) |
 | `src/lib/site.js` | Titre, sections, textes d'introduction, auteur, réseaux |
+| `src/lib/images.js` | Dimensions et variantes WebP des images de Ghost (cache `.cache/variants`) |
 | `src/lib/code-theme.js` | Thèmes de coloration du code, alignés sur les jetons CSS |
 | `src/layouts/Base.astro` | `<head>`, Open Graph, en-tête, pied de page, scripts navigateur |
 | `src/styles/global.css` | Tous les styles : jetons (clair et sombre), puis une partie par zone |

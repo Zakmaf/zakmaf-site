@@ -53,9 +53,14 @@ async function saveVideo(v) {
 }
 
 async function build() {
-  execSync('npm run build && mkdir -p dist/content && cp -r /ghost-images dist/content/images', {
-    stdio: 'inherit',
-  });
+  const steps = [
+    'npm run build',
+    'mkdir -p dist/content',
+    'cp -r /ghost-images dist/content/images',
+    // Variantes WebP produites par src/lib/images.js pendant la construction.
+    'if [ -d .cache/variants ]; then cp -r .cache/variants dist/content/variants; fi',
+  ];
+  execSync(steps.join(' && '), { stdio: 'inherit' });
   await publish('dist', '/out');
 }
 
