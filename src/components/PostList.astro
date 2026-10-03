@@ -17,7 +17,7 @@ const fmt = (d) =>
           </div>
           {p.excerpt && <p>{p.excerpt}</p>}
         </div>
-        <img src={p.feature_image ?? `/covers/${p.section}.svg`} alt="" loading="lazy" />
+        <img src={p.feature_image ?? `/covers/${p.section}.svg`} class={p.feature_image ? undefined : 'fallback'} alt="" loading="lazy" />
       </li>
     ))}
   </ul>

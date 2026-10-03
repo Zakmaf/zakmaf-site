@@ -37,3 +37,9 @@ body .cover-link .cover { margin: 0; border-radius: 0; }
 .cover-link:hover .play { background: var(--accent); }
 .post-head .watch { margin: .9rem 0 0; font-weight: 600; }
 .yt-link { font-weight: 600; }
+/* Mobile : vraie couverture en pleine largeur au-dessus du texte, illustration générique masquée. */
+@media (max-width: 34rem) {
+  body .post-list li { flex-direction: column; gap: .75rem; }
+  body .post-list img { order: -1; width: 100%; border-radius: 8px; }
+  body .post-list img.fallback { display: none; }
+}
