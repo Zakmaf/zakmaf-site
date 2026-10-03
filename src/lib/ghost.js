@@ -86,12 +86,41 @@ async function highlight(html) {
   return html;
 }
 
+// Aperçu du premier bloc de code (cartes Boilerplate) : langage, nom de fichier
+// (légende du bloc de code dans Ghost, si elle existe) et premières lignes colorées.
+const FIRST_CODE = /<pre><code(?: class="language-([\w+#-]+)")?>([\s\S]*?)<\/code><\/pre>(?:\s*<figcaption>([\s\S]*?)<\/figcaption>)?/;
+const LANG_LABELS = { yaml: 'YAML', yml: 'YAML', json: 'JSON', bash: 'Shell', sh: 'Shell', shell: 'Shell', toml: 'TOML', ini: 'INI', dockerfile: 'Dockerfile', nginx: 'Nginx', text: 'Texte' };
+const PREVIEW_LINES = 4;
+
+// Texte brut d'une légende : on garde ce qui est entre « > » et « < », puis aucun
+// chevron ne survit au décodage des entités.
+const captionText = (html) =>
+  decode(html.split('>').map((part) => part.split('<')[0]).join(''))
+    .replace(/[<>]/g, '')
+    .trim();
+
+async function codePreview(html) {
+  const m = (html || '').match(FIRST_CODE);
+  if (!m) return null;
+  const lang = m[1] || 'text';
+  const lines = decode(m[2]).replace(/\n+$/, '').split('\n');
+  const head = lines.slice(0, PREVIEW_LINES).join('\n');
+  let preview;
+  try {
+    preview = await codeToHtml(head, shikiOptions(lang));
+  } catch {
+    preview = await codeToHtml(head, shikiOptions('text'));
+  }
+  const file = m[3] ? captionText(m[3]) : '';
+  return { lang: LANG_LABELS[lang] ?? lang.toUpperCase(), file: file || null, preview };
+}
+
 function mockPosts(n) {
   const topics = ['Docker Compose', 'Proxmox', 'Traefik', 'sauvegardes Borg', 'réseau Tailscale', 'CrowdSec', 'Jellyfin', 'supervision'];
   return Array.from({ length: n }, (_, i) => ({
     title: `Article de test ${i + 1} : ${topics[i % topics.length]} en pratique${i % 4 === 0 ? ', avec un titre volontairement long pour tester le retour à la ligne' : ''}`,
     slug: `test-${i + 1}`,
-    html: '<p>Contenu de démonstration pour évaluer la mise en page.</p><pre><code class="language-yaml">services:\n  demo:\n    image: nginx:alpine\n    restart: unless-stopped</code></pre><p>Fin du contenu de démonstration.</p>',
+    html: `<p>Contenu de démonstration pour évaluer la mise en page.</p><figure class="kg-card kg-code-card"><pre><code class="language-yaml">services:\n  demo:\n    image: nginx:alpine\n    ports:\n      - 8080:80\n    restart: unless-stopped</code></pre>${i % 2 ? '' : '<figcaption><p><span>demo/compose.yml</span></p></figcaption>'}</figure><p>Fin du contenu de démonstration.</p>`,
     excerpt: 'Texte de démonstration pour évaluer la mise en page avec un grand nombre d’articles, des titres longs et des extraits qui tiennent sur plusieurs lignes.',
     custom_excerpt: null,
     feature_image: i % 2 ? '/mock.svg' : null,
@@ -134,6 +163,7 @@ async function prepare(p) {
     section,
     videoId,
     videoUrl: videoId ? watchUrl(videoId) : null,
+    code: section === 'boilerplate' ? await codePreview(p.html) : null,
   };
 }
 
