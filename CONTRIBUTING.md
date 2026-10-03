@@ -38,9 +38,10 @@ Ghost n'est nécessaire pour contribuer.
 
 ## Règles du code
 
-- Lire un fichier avant de le modifier. `src/layouts/Base.astro` porte le `<head>`, la
-  navigation et le CSS global ; les ajouts de style vont dans `src/styles/extra.css`,
-  préfixés par `body ` quand ils doivent l'emporter sur Base.
+- Lire un fichier avant de le modifier. `src/layouts/Base.astro` porte le `<head>` et la
+  navigation ; tous les styles globaux sont dans `src/styles/global.css` (jetons, puis
+  une partie par zone de la page). Pas de surcharge par spécificité (`body …`) : modifier
+  la règle existante.
 - Scripts côté navigateur : `<script is:inline>`. Variables de construction :
   `process.env`, pas `import.meta.env`.
 - Aucune ressource externe : pas de CDN, de Google Fonts, de lecteur YouTube intégré ni de
