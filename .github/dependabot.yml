@@ -15,7 +15,12 @@ updates:
     groups:
       actions:
         update-types: [minor, patch]
+  # Image de base : empreinte et correctifs suivis ; le passage à une autre version majeure
+  # de Node (LTS suivante) se fait à la main.
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: node
+        update-types: [version-update:semver-major]

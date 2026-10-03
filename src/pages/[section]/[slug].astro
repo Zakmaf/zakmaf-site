@@ -28,7 +28,7 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
         <time datetime={post.published_at}>{date}</time>
         {post.reading_time ? ` · ${post.reading_time} min de lecture` : ''}
       </div>
-      {post.videoUrl && <p class="watch"><a href={post.videoUrl}>Regarder la vidéo sur YouTube →</a></p>}
+      {post.videoUrl && !post.feature_image && <p class="watch"><a href={post.videoUrl}>Regarder la vidéo sur YouTube →</a></p>}
     </header>
     {post.feature_image && (post.videoUrl ? (
       <a class="cover-link" href={post.videoUrl} aria-label={`Regarder : ${post.title}`}>
