@@ -16,6 +16,10 @@ changement. Le contenu (articles, images) n'est pas dans ce dépôt.
 | `YOUTUBE_CHANNEL_ID` | Chaîne dont la dernière vidéo est affichée en accueil |
 | `MOCK_POSTS` | Nombre d'articles de test à ajouter (0 en production) |
 
+Sans `GHOST_API_URL`, `npm run build` fonctionne hors ligne : le site est construit
+uniquement avec des articles fictifs (12 par défaut, ou `MOCK_POSTS`). La CI s'en sert
+pour vérifier la construction avant de publier l'image.
+
 ## Volumes
 
 - `/out` : site généré, à servir par un serveur web
