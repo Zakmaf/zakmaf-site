@@ -27,6 +27,12 @@ const fmt = (d) =>
         </li>
       ) : (
         <li>
+          {p.feature_image && (
+            <a class="thumb" href={`/${p.section}/${p.slug}/`} tabindex="-1" aria-hidden="true">
+              <img src={p.feature_image} alt="" loading="lazy" />
+              {p.videoId && <span class="play"></span>}
+            </a>
+          )}
           <div class="text">
             <a class="title" href={`/${p.section}/${p.slug}/`}>{p.title}</a>
             <div class="meta">
@@ -35,7 +41,6 @@ const fmt = (d) =>
             </div>
             {p.excerpt && <p>{p.excerpt}</p>}
           </div>
-          <img src={p.feature_image ?? `/covers/${p.section}.svg`} class={p.feature_image ? undefined : 'fallback'} alt="" loading="lazy" />
         </li>
       )
     ))}

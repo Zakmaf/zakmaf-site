@@ -145,14 +145,19 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 /* ---------- Listes d'articles ---------- */
 .post-list {
   list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr)); column-gap: 3rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); column-gap: 2.25rem;
 }
-.post-list li { display: flex; gap: 1.25rem; align-items: flex-start; padding-block: 1.25rem; border-bottom: 1px solid var(--line); }
+.post-list li { display: flex; flex-direction: column; gap: .8rem; padding-block: 1.25rem; border-bottom: 1px solid var(--line); }
 .post-list .text { flex: 1; min-width: 0; }
 .post-list a.title { font: 600 1.3rem/1.25 var(--serif); color: var(--fg); text-decoration: none; }
 .post-list a.title:hover { color: var(--accent); }
 .post-list p { margin: .35rem 0 0; color: var(--muted); font-size: .95rem; }
-.post-list img { width: 7rem; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; flex: none; align-self: flex-start; }
+/* Miniature au-dessus du texte, cadrée et légèrement désaturée : le titre reste premier. */
+.post-list .thumb { display: block; position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 10px; background: #2a2825; box-shadow: 0 0 0 1px var(--line); }
+.post-list .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.8) contrast(.95); transition: filter .2s; }
+.post-list li:hover .thumb img { filter: none; }
+.post-list .thumb .play { inset: auto auto .6rem .6rem; width: 2.5rem; height: 2.5rem; }
+.post-list .thumb .play::after { margin-left: .18rem; border-left-width: .78rem; border-top-width: .48rem; border-bottom-width: .48rem; }
 
 /* Cartes Boilerplate : onglet de fichier, aperçu du code, titre. */
 .post-list li.file { display: block; border-bottom: 0; }
@@ -242,8 +247,4 @@ article .body pre code { font-size: 1em; background: none; border: 0; padding: 0
   .site-header nav a { flex: none; padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); }
   .site-header nav a[aria-current='page'] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
   #theme-toggle { flex: none; margin-left: auto; }
-  /* Couverture réelle en pleine largeur au-dessus du texte, illustration générique masquée. */
-  .post-list li { flex-direction: column; gap: .75rem; }
-  .post-list img { order: -1; width: 100%; border-radius: 8px; }
-  .post-list img.fallback { display: none; }
 }
