@@ -92,6 +92,13 @@ const FIRST_CODE = /<pre><code(?: class="language-([\w+#-]+)")?>([\s\S]*?)<\/cod
 const LANG_LABELS = { yaml: 'YAML', yml: 'YAML', json: 'JSON', bash: 'Shell', sh: 'Shell', shell: 'Shell', toml: 'TOML', ini: 'INI', dockerfile: 'Dockerfile', nginx: 'Nginx', text: 'Texte' };
 const PREVIEW_LINES = 4;
 
+// Texte brut d'une légende : on garde ce qui est entre « > » et « < », puis aucun
+// chevron ne survit au décodage des entités.
+const captionText = (html) =>
+  decode(html.split('>').map((part) => part.split('<')[0]).join(''))
+    .replace(/[<>]/g, '')
+    .trim();
+
 async function codePreview(html) {
   const m = (html || '').match(FIRST_CODE);
   if (!m) return null;
@@ -104,8 +111,7 @@ async function codePreview(html) {
   } catch {
     preview = await codeToHtml(head, shikiOptions('text'));
   }
-  // Texte brut de la légende : aucun chevron ne survit, même après décodage des entités.
-  const file = m[3] ? decode(m[3].replace(/<[^>]*>/g, '')).replace(/[<>]/g, '').trim() : '';
+  const file = m[3] ? captionText(m[3]) : '';
   return { lang: LANG_LABELS[lang] ?? lang.toUpperCase(), file: file || null, preview };
 }
 
