@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopicChips from '../../components/TopicChips.astro';
+import { getTopics } from '../../lib/ghost.js';
+const topics = await getTopics();
+---
+<Base title="Thèmes" description="Tous les thèmes abordés, toutes sections confondues.">
+  <h1>Thèmes</h1>
+  <p class="intro">Tous les thèmes abordés, toutes sections confondues.</p>
+  {topics.length ? <TopicChips topics={topics} count /> : <p class="meta">Aucun thème pour le moment.</p>}
+</Base>

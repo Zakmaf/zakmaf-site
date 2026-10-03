@@ -180,6 +180,19 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 .file-card:hover .title { color: var(--accent); }
 .file-card:hover { border-color: var(--accent); }
 
+/* ---------- Thèmes ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: .75rem 0 0; padding: 0; }
+.chips a {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 2.25rem; padding: 0 .9rem;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  color: var(--fg); font-size: .9rem; text-decoration: none;
+}
+.chips a:hover { border-color: var(--accent); color: var(--accent); }
+.chip-count { font: 600 .75rem/1 var(--mono); color: var(--muted); }
+.post-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; }
+.post-tags .chips { margin: 0; gap: .35rem; }
+.post-tags .chips a { min-height: 1.7rem; padding: 0 .65rem; font-size: .8rem; }
+
 /* ---------- Article ---------- */
 .crumb { font: 600 .75rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; text-decoration: none; }
 .post-head { margin-bottom: 2rem; }

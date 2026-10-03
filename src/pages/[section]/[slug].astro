@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getPosts } from '../../lib/ghost.js';
+import TopicChips from '../../components/TopicChips.astro';
 import { existsSync } from 'node:fs';
 import { LABELS, AUTHOR, SOCIALS } from '../../lib/site.js';
 export async function getStaticPaths() {
@@ -26,7 +27,10 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
 <Base title={post.title} image={post.feature_image} description={post.custom_excerpt ?? post.excerpt}>
   <article class="narrow">
     <header class="post-head">
-      <a class="crumb" href={`/${post.section}/`}>{LABELS[post.section]}</a>
+      <div class="post-tags">
+        <a class="crumb" href={`/${post.section}/`}>{LABELS[post.section]}</a>
+        <TopicChips topics={post.topics} />
+      </div>
       <h1>{post.title}</h1>
       <div class="meta">
         <time datetime={post.published_at}>{date}</time>

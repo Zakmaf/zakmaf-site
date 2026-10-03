@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts, getTopics } from '../../lib/ghost.js';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return (await getTopics()).map((topic) => ({
+    params: { slug: topic.slug },
+    props: { topic, posts: posts.filter((p) => p.topics.some((t) => t.slug === topic.slug)) },
+  }));
+}
+const { topic, posts } = Astro.props;
+const n = posts.length;
+---
+<Base title={topic.name} description={`Les articles sur le thème ${topic.name}.`}>
+  <a class="crumb" href="/themes/">Thèmes</a>
+  <h1>{topic.name}</h1>
+  <p class="intro">{n} article{n > 1 ? 's' : ''}, toutes sections confondues.</p>
+  <PostList posts={posts} />
+</Base>
