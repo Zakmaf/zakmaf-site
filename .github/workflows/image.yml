@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
     paths-ignore: ['**.md', 'LICENSE']
+  pull_request:
+    branches: [main]
+    paths-ignore: ['**.md', 'LICENSE']
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,8 +19,20 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Sans GHOST_API_URL, la construction se fait hors ligne avec des articles fictifs.
+      - run: npm run build
   build:
-    needs: secrets
+    needs: [secrets, check]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
