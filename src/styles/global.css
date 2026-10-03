@@ -285,4 +285,7 @@ article .body pre code { font-size: 1em; background: none; border: 0; padding: 0
   .site-header nav a { flex: none; padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); }
   .site-header nav a[aria-current='page'] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
   #theme-toggle { flex: none; margin-left: auto; }
+  /* Pied de page : signature sur toute la largeur, puis les deux colonnes côte à côte. */
+  .footer-inner { gap: 1.75rem 3rem; }
+  .footer-id { flex-basis: 100%; }
 }
