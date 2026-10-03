@@ -70,14 +70,19 @@ const shikiOptions = (lang) => ({
   defaultColor: false,
 });
 
+// Bloc de code Ghost : <pre><code class="language-x">, attributs supplémentaires tolérés
+// (classe vide, autres attributs sur <pre> ou <code>, espaces entre les balises).
+const CODE_BLOCK = /<pre\b[^>]*>\s*<code\b([^>]*)>([\s\S]*?)<\/code>\s*<\/pre>/;
+const langOf = (attrs) => attrs.match(/\blang(?:uage)?-([\w+#-]+)/)?.[1] ?? 'text';
+
 async function highlight(html) {
   if (!html) return html;
-  const re = /<pre><code(?: class="language-([\w+#-]+)")?>([\s\S]*?)<\/code><\/pre>/g;
+  const re = new RegExp(CODE_BLOCK.source, 'g');
   for (const m of [...html.matchAll(re)]) {
     const code = decode(m[2]);
     let out;
     try {
-      out = await codeToHtml(code, shikiOptions(m[1] || 'text'));
+      out = await codeToHtml(code, shikiOptions(langOf(m[1])));
     } catch {
       out = await codeToHtml(code, shikiOptions('text'));
     }
@@ -88,7 +93,7 @@ async function highlight(html) {
 
 // Aperçu du premier bloc de code (cartes Boilerplate) : langage, nom de fichier
 // (légende du bloc de code dans Ghost, si elle existe) et premières lignes colorées.
-const FIRST_CODE = /<pre><code(?: class="language-([\w+#-]+)")?>([\s\S]*?)<\/code><\/pre>(?:\s*<figcaption>([\s\S]*?)<\/figcaption>)?/;
+const FIRST_CODE = new RegExp(`${CODE_BLOCK.source}(?:\\s*<figcaption\\b[^>]*>([\\s\\S]*?)<\\/figcaption>)?`);
 const LANG_LABELS = { yaml: 'YAML', yml: 'YAML', json: 'JSON', bash: 'Shell', sh: 'Shell', shell: 'Shell', toml: 'TOML', ini: 'INI', dockerfile: 'Dockerfile', nginx: 'Nginx', text: 'Texte' };
 const PREVIEW_LINES = 4;
 
@@ -102,7 +107,7 @@ const captionText = (html) =>
 async function codePreview(html) {
   const m = (html || '').match(FIRST_CODE);
   if (!m) return null;
-  const lang = m[1] || 'text';
+  const lang = langOf(m[1]);
   const lines = decode(m[2]).replace(/\n+$/, '').split('\n');
   const head = lines.slice(0, PREVIEW_LINES).join('\n');
   let preview;
