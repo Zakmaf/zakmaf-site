@@ -5,44 +5,73 @@ import PostList from '../components/PostList.astro';
 import { getPosts, SECTIONS } from '../lib/ghost.js';
 import { SITE, LABELS, INTROS, AUTHOR, SOCIALS } from '../lib/site.js';
 const posts = await getPosts();
-// Sections affichées sur l'accueil : uniquement celles qui ont au moins un article.
-const sections = SECTIONS.map((slug) => ({ slug, posts: posts.filter((p) => p.section === slug) }))
-  .filter((s) => s.posts.length > 0);
 const hasPhoto = existsSync(`public${AUTHOR.photo}`);
-const video = existsSync('src/data/youtube.json')
+const yt = existsSync('src/data/youtube.json')
   ? JSON.parse(readFileSync('src/data/youtube.json', 'utf8'))
   : null;
-const videoUrl = video && `https://www.youtube.com/watch?v=${video.id}`;
+const ytUrl = yt && `https://www.youtube.com/watch?v=${yt.id}`;
+const ytImage = yt?.hasImage ? `/youtube-latest.jpg?v=${yt.id}` : null;
 const channelUrl = SOCIALS.find((s) => s.label === 'YouTube')?.url;
 const fmt = (d) =>
   new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+// À la une : le dernier article Vidéos (sinon le dernier article). Si la dernière vidéo de la
+// chaîne a son article, les deux ne font qu'un ; sinon elle apparaît en tuile « Sur la chaîne ».
+const lead = posts.find((p) => p.section === 'videos') ?? posts[0] ?? null;
+const ytHasPost = yt && posts.some((p) => p.videoId === yt.id);
+const featured = lead
+  ? {
+      href: `/${lead.section}/${lead.slug}/`,
+      title: lead.title,
+      image: lead.feature_image ?? (lead.videoId && lead.videoId === yt?.id ? ytImage : null) ?? `/covers/${lead.section}.svg`,
+      date: lead.published_at,
+      kind: lead.videoUrl ? 'Vidéo + article' : LABELS[lead.section],
+      play: Boolean(lead.videoUrl),
+      videoUrl: lead.videoUrl,
+    }
+  : yt
+    ? { href: ytUrl, title: yt.title, image: ytImage, date: yt.published, kind: 'Vidéo', play: true, videoUrl: null }
+    : null;
+const channelTile = yt && lead && !ytHasPost ? yt : null;
+
+// Sections de l'accueil : celles qui ont au moins un article, sans répéter l'article à la une.
+const sections = SECTIONS.map((slug) => ({
+  slug,
+  posts: posts.filter((p) => p.section === slug && p !== lead).slice(0, 4),
+  tile: slug === 'videos' ? channelTile : null,
+})).filter((s) => s.posts.length > 0 || s.tile);
 ---
 <Base description={AUTHOR.bio}>
   <div class="home-top">
     <section class="hero">
-      {hasPhoto && <img src={AUTHOR.photo} alt={AUTHOR.name} width="128" height="128" />}
-      <div>
-        <h1>{SITE.title}</h1>
-        <p class="tagline">{SITE.description}</p>
+      <span class="label eyebrow">Carnet de bord · homelab &amp; auto-hébergement</span>
+      <h1>{SITE.title}</h1>
+      <p class="tagline">{SITE.description}</p>
+      <div class="hero-bio">
+        {hasPhoto && <img src={AUTHOR.photo} alt={AUTHOR.name} width="80" height="80" />}
         <p class="bio"><strong>{AUTHOR.name}.</strong> {AUTHOR.bio} <a href="/a-propos/">En savoir plus</a></p>
-        <p class="socials">
-          {SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
-        </p>
       </div>
+      <p class="actions">
+        {channelUrl && <a class="btn btn-primary" href={channelUrl} rel="me noopener">S'abonner sur YouTube</a>}
+        <a class="btn" href="/boilerplate/">Les fichiers prêts à copier</a>
+      </p>
     </section>
-    {video && (
-      <section class="latest">
-        <div class="section-head">
-          <h2>Dernière vidéo</h2>
-          {channelUrl && <a href={channelUrl}>La chaîne →</a>}
+    {featured && (
+      <article class="featured">
+        <div class="featured-head">
+          <span class="label">À la une</span>
+          <span class="label muted">{featured.kind}</span>
         </div>
-        <a class="thumb" href={videoUrl} aria-label={`Regarder : ${video.title}`}>
-          {video.hasImage && <img src={`/youtube-latest.jpg?v=${video.id}`} alt="" />}
-          <span class="play" aria-hidden="true"></span>
+        <a class="featured-cover" href={featured.href} tabindex="-1" aria-hidden="true">
+          {featured.image && <img src={featured.image} alt="" />}
+          {featured.play && <span class="play"></span>}
         </a>
-        <a class="title" href={videoUrl}>{video.title}</a>
-        {video.published && <div class="meta">{fmt(video.published)} · YouTube</div>}
-      </section>
+        <h2><a href={featured.href}>{featured.title}</a></h2>
+        <p class="meta">
+          {featured.date && fmt(featured.date)}
+          {featured.videoUrl && <> · <a href={featured.videoUrl}>Regarder sur YouTube →</a></>}
+        </p>
+      </article>
     )}
   </div>
   {sections.map((s, i) => (
@@ -54,7 +83,16 @@ const fmt = (d) =>
         <a href={`/${s.slug}/`}>Tout voir →</a>
       </div>
       <p class="intro">{INTROS[s.slug]}</p>
-      <PostList posts={s.posts.slice(0, 4)} />
+      <PostList posts={s.posts}>
+        {s.tile && (
+          <li class="tile">
+            <span class="label">Sur la chaîne</span>
+            <a class="tile-title" href={ytUrl}>{s.tile.title}</a>
+            <span class="meta">{s.tile.published && `${fmt(s.tile.published)} · `}article en préparation</span>
+            <a class="tile-link" href={ytUrl}>Regarder sur YouTube →</a>
+          </li>
+        )}
+      </PostList>
     </section>
   ))}
 </Base>
