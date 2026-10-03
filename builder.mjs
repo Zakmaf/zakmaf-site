@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { writeFile, mkdir } from 'node:fs/promises';
+import { publish } from './publish.mjs';
 
 const { GHOST_API_URL: API, GHOST_CONTENT_KEY: KEY, YOUTUBE_CHANNEL_ID: YT } = process.env;
 const HEADERS = { 'X-Forwarded-Proto': 'https' };
@@ -51,11 +52,11 @@ async function saveVideo(v) {
   await writeFile('src/data/youtube.json', JSON.stringify({ ...v, hasImage: Boolean(img) }));
 }
 
-function build() {
-  execSync(
-    'npm run build && mkdir -p dist/content && cp -r /ghost-images dist/content/images && rm -rf /out/* && cp -r dist/. /out/',
-    { stdio: 'inherit' }
-  );
+async function build() {
+  execSync('npm run build && mkdir -p dist/content && cp -r /ghost-images dist/content/images', {
+    stdio: 'inherit',
+  });
+  await publish('dist', '/out');
 }
 
 let last = null;
@@ -76,7 +77,7 @@ while (true) {
       console.log(`change detected (${fp}), building`);
       await fetchCardAssets();
       if (video) await saveVideo(video);
-      build();
+      await build();
       last = fp;
       console.log('build ok');
     }
