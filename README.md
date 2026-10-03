@@ -1,43 +1,27 @@
-# Astro Starter Kit: Minimal
+# zakmaf-site
 
-```sh
-npm create astro@latest -- --template minimal
-```
+Code du site [zakmaf.net](https://zakmaf.net) (« La prise de note ») : un projet Astro
+qui génère un site statique à partir d'une instance Ghost privée utilisée en headless.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Le conteneur interroge Ghost à intervalle régulier et reconstruit le site à chaque
+changement. Le contenu (articles, images) n'est pas dans ce dépôt.
 
-## 🚀 Project Structure
+## Variables d'environnement
 
-Inside of your Astro project, you'll see the following folders and files:
+| Variable | Rôle |
+|---|---|
+| `GHOST_API_URL` | URL interne de Ghost |
+| `GHOST_CONTENT_KEY` | Clé de la Content API |
+| `GHOST_PUBLIC_URL` | URL publique déclarée dans Ghost (réécriture des liens d'images) |
+| `YOUTUBE_CHANNEL_ID` | Chaîne dont la dernière vidéo est affichée en accueil |
+| `MOCK_POSTS` | Nombre d'articles de test à ajouter (0 en production) |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## Volumes
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+- `/out` : site généré, à servir par un serveur web
+- `/ghost-images` : images de Ghost, en lecture seule
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Licence
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+La licence (fichier `LICENSE`) s'applique au code. Le portrait (`public/zak.jpg`),
+le nom du site et son identité visuelle ne sont pas couverts.
