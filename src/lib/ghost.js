@@ -4,6 +4,9 @@ const API = process.env.GHOST_API_URL;
 const KEY = process.env.GHOST_CONTENT_KEY;
 const PUBLIC_URL = process.env.GHOST_PUBLIC_URL;
 const HEADERS = { 'X-Forwarded-Proto': 'https' };
+// Sans GHOST_API_URL : construction hors ligne, uniquement avec des articles fictifs (CI, poste local).
+const OFFLINE = !API;
+const OFFLINE_POSTS = 12;
 
 export const SECTIONS = ['videos', 'boilerplate', 'blog'];
 
@@ -100,6 +103,11 @@ function mockPosts(n) {
 
 async function load() {
   const posts = [];
+  if (OFFLINE) {
+    const n = Number(process.env.MOCK_POSTS) || OFFLINE_POSTS;
+    console.warn(`GHOST_API_URL absent : construction hors ligne avec ${n} articles fictifs`);
+    return Promise.all(mockPosts(n).map(prepare));
+  }
   let page = 1;
   while (page) {
     const url = `${API}/ghost/api/content/posts/?key=${KEY}&limit=100&page=${page}&include=tags`;
@@ -111,22 +119,22 @@ async function load() {
   }
   const mock = Number(process.env.MOCK_POSTS || 0);
   if (mock) posts.push(...mockPosts(mock));
-  return Promise.all(
-    posts.map(async (p) => {
-      const section = SECTIONS.find((s) => p.tags.some((t) => t.slug === s)) ?? 'blog';
-      // Vidéo du post : première vidéo YouTube citée, uniquement dans la section Vidéos.
-      const videoId = section === 'videos' ? ((p.html || '').match(YT)?.[1] ?? null) : null;
-      return {
-        ...p,
-        excerpt: p.custom_excerpt || summarize(textOf(p.html)),
-        html: await highlight(unembed(localize(p.html), videoId)),
-        feature_image: localize(p.feature_image),
-        section,
-        videoId,
-        videoUrl: videoId ? watchUrl(videoId) : null,
-      };
-    })
-  );
+  return Promise.all(posts.map(prepare));
+}
+
+async function prepare(p) {
+  const section = SECTIONS.find((s) => p.tags.some((t) => t.slug === s)) ?? 'blog';
+  // Vidéo du post : première vidéo YouTube citée, uniquement dans la section Vidéos.
+  const videoId = section === 'videos' ? ((p.html || '').match(YT)?.[1] ?? null) : null;
+  return {
+    ...p,
+    excerpt: p.custom_excerpt || summarize(textOf(p.html)),
+    html: await highlight(unembed(localize(p.html), videoId)),
+    feature_image: localize(p.feature_image),
+    section,
+    videoId,
+    videoUrl: videoId ? watchUrl(videoId) : null,
+  };
 }
 
 let cache;
@@ -135,6 +143,7 @@ export function getPosts() {
 }
 
 export async function getPage(slug) {
+  if (OFFLINE) return null;
   const res = await fetch(`${API}/ghost/api/content/pages/slug/${slug}/?key=${KEY}`, { headers: HEADERS });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Ghost API ${res.status} on page ${slug}`);
