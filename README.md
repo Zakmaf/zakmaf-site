@@ -25,6 +25,10 @@ pour vérifier la construction avant de publier l'image.
 - `/out` : site généré, à servir par un serveur web
 - `/ghost-images` : images de Ghost, en lecture seule
 
+## Contribuer
+
+Voir [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Licence
 
 La licence (fichier `LICENSE`) s'applique au code. Le portrait (`public/zak.jpg`),
