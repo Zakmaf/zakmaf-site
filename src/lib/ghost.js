@@ -104,7 +104,8 @@ async function codePreview(html) {
   } catch {
     preview = await codeToHtml(head, shikiOptions('text'));
   }
-  const file = m[3] ? decode(m[3].replace(/<[^>]+>/g, '')).trim() : '';
+  // Texte brut de la légende : aucun chevron ne survit, même après décodage des entités.
+  const file = m[3] ? decode(m[3].replace(/<[^>]*>/g, '')).replace(/[<>]/g, '').trim() : '';
   return { lang: LANG_LABELS[lang] ?? lang.toUpperCase(), file: file || null, preview };
 }
 
