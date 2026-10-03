@@ -8,17 +8,36 @@ const fmt = (d) =>
 ) : (
   <ul class="post-list">
     {posts.map((p) => (
-      <li>
-        <div class="text">
-          <a class="title" href={`/${p.section}/${p.slug}/`}>{p.title}</a>
-          <div class="meta">
-            {fmt(p.published_at)}
-            {p.reading_time ? ` · ${p.reading_time} min de lecture` : ''}
+      p.code ? (
+        <li class="file">
+          <a class="file-card" href={`/${p.section}/${p.slug}/`}>
+            <span class="file-tab">
+              <span class="file-name">{p.code.file ?? p.code.lang}</span>
+              {p.code.file && <span class="file-lang">{p.code.lang}</span>}
+            </span>
+            <span class="file-preview" set:html={p.code.preview} />
+            <span class="file-body">
+              <span class="title">{p.title}</span>
+              <span class="meta">
+                {fmt(p.published_at)}
+                {p.reading_time ? ` · ${p.reading_time} min de lecture` : ''}
+              </span>
+            </span>
+          </a>
+        </li>
+      ) : (
+        <li>
+          <div class="text">
+            <a class="title" href={`/${p.section}/${p.slug}/`}>{p.title}</a>
+            <div class="meta">
+              {fmt(p.published_at)}
+              {p.reading_time ? ` · ${p.reading_time} min de lecture` : ''}
+            </div>
+            {p.excerpt && <p>{p.excerpt}</p>}
           </div>
-          {p.excerpt && <p>{p.excerpt}</p>}
-        </div>
-        <img src={p.feature_image ?? `/covers/${p.section}.svg`} class={p.feature_image ? undefined : 'fallback'} alt="" loading="lazy" />
-      </li>
+          <img src={p.feature_image ?? `/covers/${p.section}.svg`} class={p.feature_image ? undefined : 'fallback'} alt="" loading="lazy" />
+        </li>
+      )
     ))}
   </ul>
 )}
