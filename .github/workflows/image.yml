@@ -1,10 +1,13 @@
 name: image
+# PR et main : vérification (secrets, construction du site, construction de l'image).
+# Release GitHub publiée : construction et publication de l'image sur GHCR.
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
+  release:
+    types: [published]
 permissions: {}
 # Une PR mise à jour annule son run précédent ; les runs sur main vont jusqu'au bout.
 concurrency:
@@ -12,6 +15,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   secrets:
+    # Le code d'une release a déjà été analysé lors de son arrivée sur main.
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -39,19 +44,31 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Release : le tag doit correspondre à la version de package.json (vX.Y.Z).
+      - if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          expected="v$(node -p 'require("./package.json").version')"
+          if [ "$TAG" != "$expected" ]; then
+            echo "::error::Tag $TAG différent de la version de package.json ($expected)"
+            exit 1
+          fi
       - run: npm ci
       # Sans GHOST_API_URL, la construction se fait hors ligne avec des articles fictifs.
       - run: npm run build
   build:
     needs: [secrets, check]
+    # « secrets » est ignoré sur une release : on continue si check a réussi.
+    if: ${{ !cancelled() && needs.check.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.secrets.result) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       packages: write
     env:
-      # Publication uniquement depuis main ; en PR (ou ailleurs) l'image est construite sans être poussée.
-      PUBLISH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+      # Publication uniquement sur une release publiée ; ailleurs, l'image est construite sans être poussée.
+      PUBLISH: ${{ github.event_name == 'release' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -67,9 +84,12 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ghcr.io/${{ github.repository }}
+          # latest, vMAJEUR, vMAJEUR.MINEUR et vMAJEUR.MINEUR.PATCH ; pas de latest pour une préversion.
           tags: |
-            type=raw,value=latest
-            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=semver,pattern=v{{major}},enable=${{ !startsWith(github.event.release.tag_name, 'v0.') }}
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .

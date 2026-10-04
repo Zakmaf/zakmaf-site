@@ -1,0 +1,20 @@
+name: Erreur dans un article
+description: Coquille, information fausse ou périmée, fichier de configuration qui ne fonctionne plus
+labels: ["contenu"]
+body:
+  - type: markdown
+    attributes:
+      value: Le contenu est rédigé hors de ce dépôt ; la correction sera faite dans l'article.
+  - type: input
+    id: url
+    attributes:
+      label: Article concerné
+      placeholder: https://zakmaf.net/...
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Ce qui est faux, et la correction proposée
+    validations:
+      required: true

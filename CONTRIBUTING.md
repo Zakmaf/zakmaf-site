@@ -60,23 +60,83 @@ Ghost n'est nécessaire pour contribuer.
 - La PR vise `main`. Les jobs `secrets`, `check` et `build` doivent être verts ; en PR,
   l'image est construite mais pas publiée.
 
-## Intégration et publication
+## Intégration
 
-Le workflow `.github/workflows/image.yml` enchaîne :
+Le workflow `.github/workflows/image.yml` enchaîne, sur chaque PR et chaque fusion dans `main` :
 
 1. `secrets` : gitleaks sur tout l'historique ;
 2. `check` : `npm ci` puis construction hors ligne ;
-3. `build` : construction de l'image Docker, publiée sur
-   `ghcr.io/zakmaf/zakmaf-site` (tags `latest` et `sha-<court>`) uniquement après
-   fusion dans `main`.
-
-L'image ne contient que le code et ses dépendances : le site est généré au démarrage du
-conteneur, sur le serveur. La mise en production reste une action manuelle du mainteneur
-(nouveau tirage de l'image) ; un retour arrière se fait en épinglant un tag `sha-<court>`.
+3. `build` : construction de l'image Docker, **sans publication**.
 
 Dependabot propose les mises à jour une fois par mois. Les versions mineures et les
 correctifs sont fusionnés automatiquement une fois la CI verte ; les versions majeures
-sont relues à la main.
+sont relues à la main. Ces mises à jour partent avec la release suivante.
+
+## Releases
+
+- Versionnement sémantique `vMAJEUR.MINEUR.PATCH`, appliqué au site :
+  - **MAJEUR** : le déploiement doit être adapté (variable, volume, réseau, compose) ou des
+    URL publiques changent ;
+  - **MINEUR** : nouvelle fonctionnalité visible ;
+  - **PATCH** : correctifs, ajustements visuels, mises à jour de dépendances.
+- La version vit dans `package.json` (`npm version X.Y.Z --no-git-tag-version`) et s'affiche
+  dans le pied de page. Elle est mise à jour **avant** la release, dans une PR dédiée.
+- Chaque version a une entrée dans [docs/RELEASES.md](docs/RELEASES.md), au format ci-dessous.
+- La release GitHub se crée depuis `main` après fusion, avec le tag `vX.Y.Z` et le texte de
+  l'entrée de `docs/RELEASES.md`. Sa publication construit et pousse l'image sur
+  `ghcr.io/zakmaf/zakmaf-site` sous les tags `latest`, `vMAJEUR`, `vMAJEUR.MINEUR` et
+  `vMAJEUR.MINEUR.PATCH`. Une préversion (`v1.1.0-rc.1`, case « pre-release ») ne déplace
+  pas `latest`.
+- La CI refuse une release dont le tag ne correspond pas à la version de `package.json`.
+- **Approbation obligatoire** : aucun agent (Claude, Codex, etc.) ne crée ni ne publie de
+  release, ne crée ni ne pousse de tag, ne relance le workflow de publication ni ne déploie
+  sans l'accord explicite du propriétaire du dépôt, demandé à chaque fois.
+
+### États de publication
+
+Chaque état se vérifie séparément, jamais par déduction du précédent :
+
+1. **Source préparée** : version mise à jour dans `package.json`, entrée ajoutée dans
+   `docs/RELEASES.md`, PR fusionnée dans `main`. Rien n'est publié.
+2. **Release publiée** : la release GitHub existe ; elle déclenche `image.yml`.
+3. **Image publiée** : le run de `image.yml` sur la release est vert et les tags existent
+   sur GHCR (onglet *Packages* du dépôt).
+4. **Production déployée** : le serveur exécute la nouvelle image (nouveau tirage de l'image
+   épinglée) et le pied de page du site affiche la nouvelle version. Action hors dépôt, faite
+   par le propriétaire.
+
+### Checklist avant release
+
+Chaque point se vérifie avec la commande réellement exécutée :
+
+- [ ] `npm ci && npm run build` passe en local (mode hors ligne)
+- [ ] `node -p "require('./package.json').version"` donne la version visée
+- [ ] `docs/RELEASES.md` contient l'entrée de la version, conforme au format
+- [ ] La CI de `main` est verte sur le commit à publier
+
+### Rédaction des notes de version
+
+Les notes s'adressent au lecteur du site comme à l'opérateur du serveur.
+
+```markdown
+## vX.Y.Z - AAAA-MM-JJ
+
+### Nouveautés
+### Améliorations
+### Correctifs
+### Sécurité
+### Mise à jour de la stack
+### Migration
+```
+
+- Français. Une ligne par changement, commençant par un verbe au présent (`Ajoute`, `Corrige`,
+  `Passe`) ou par le nom de la fonctionnalité.
+- Décrire l'effet visible, pas les fichiers ou fonctions modifiés.
+- Citer l'issue en fin de ligne (`#XX`) quand elle existe ; chiffrer les gains quand c'est
+  pertinent.
+- Omettre les sections vides, sauf **Migration**, toujours présente : actions à faire sur le
+  serveur, ou « Aucune action requise », et la commande `docker pull` du tag exact.
+- Ni tiret cadratin ni émoji.
 
 ## Signaler une vulnérabilité
 
