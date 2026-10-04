@@ -62,6 +62,7 @@ services:
       GHOST_CONTENT_KEY: ${GHOST_CONTENT_KEY}
       GHOST_PUBLIC_URL: https://ghost.example.com
       MOCK_POSTS: ${MOCK_POSTS:-0}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
     volumes:
       - /srv/zakmaf-site/www:/out
       - /srv/zakmaf-site/ghost/content/images:/ghost-images:ro

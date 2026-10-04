@@ -15,6 +15,7 @@ changement. Le contenu (articles, images) n'est pas dans ce dépôt.
 | `GHOST_PUBLIC_URL` | URL publique déclarée dans Ghost (réécriture des liens d'images) |
 | `MOCK_POSTS` | Nombre d'articles de test à ajouter (0 en production) |
 | `GHOST_IMAGES_DIR` | Dossier des images de Ghost (`/ghost-images` par défaut) |
+| `CONTACT_EMAIL` | Adresse proposée sur la page Contact, masquée dans le HTML (vide : pas de page Contact) |
 
 Sans `GHOST_API_URL`, `npm run build` fonctionne hors ligne : le site est construit
 uniquement avec des articles fictifs (12 par défaut, ou `MOCK_POSTS`). La CI s'en sert

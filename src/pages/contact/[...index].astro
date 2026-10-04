@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import { AUTHOR, SOCIALS, CONTACT_EMAIL } from '../../lib/site.js';
+// Route dynamique pour pouvoir ne rien générer : sans CONTACT_EMAIL, pas de page /contact/
+// (ni de lien au pied de page, voir Base.astro).
+export async function getStaticPaths() {
+  const { CONTACT_EMAIL } = await import('../../lib/site.js');
+  return CONTACT_EMAIL ? [{ params: { index: undefined } }] : [];
+}
+// L'adresse n'apparaît pas en clair dans le HTML : inversée puis encodée en base64, elle est
+// reconstituée par le script au clic, ce qui écarte la plupart des robots qui collectent
+// les adresses.
+const encoded = Buffer.from([...CONTACT_EMAIL].reverse().join('')).toString('base64');
+const socials = SOCIALS.filter((s) => s.url);
+---
+<Base title="Contact" description={`Écrire à ${AUTHOR.name} : une question sur une vidéo ou un article, une idée de collab entre créateurs.`}>
+  <article class="narrow">
+    <header class="post-head">
+      <h1>Contact</h1>
+    </header>
+    <div class="body">
+      <p>
+        Une question sur une vidéo ou un article, une remarque, ou simplement envie d'échanger :
+        le plus simple est de m'écrire.
+      </p>
+      <p class="actions" id="contact-email">
+        <button class="btn btn-primary" type="button" data-c={encoded}>Afficher l'adresse e-mail</button>
+      </p>
+      <noscript><p>L'adresse s'affiche avec JavaScript. Sinon, passez par un des réseaux ci-dessous.</p></noscript>
+      <h2>Une idée de collab ?</h2>
+      <p>
+        Vous faites aussi des vidéos sur l'auto-hébergement, l'open source, le homelab ou l'IA
+        et vous avez une idée de vidéo à faire ensemble ? Écrivez-moi en présentant votre chaîne
+        et votre idée, même si elle n'est qu'esquissée.
+      </p>
+      <h2>Ailleurs</h2>
+    </div>
+    <p class="socials">
+      {socials.map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
+    </p>
+  </article>
+  <script is:inline>
+    const box = document.getElementById('contact-email');
+    box.querySelector('button').addEventListener('click', (e) => {
+      const addr = [...atob(e.currentTarget.dataset.c)].reverse().join('');
+      const link = document.createElement('a');
+      link.href = `mailto:${addr}`;
+      link.textContent = addr;
+      box.replaceChildren(link);
+      link.focus();
+    });
+  </script>
+</Base>

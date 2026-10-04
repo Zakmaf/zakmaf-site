@@ -22,6 +22,10 @@ export const AUTHOR = {
   bio: "Je construis, teste et explique des technologies utiles, en français : auto-hébergement, alternatives open source, homelabs, serveurs et intelligence artificielle. Ce site prolonge mes vidéos avec les articles, les fichiers de configuration et les notes qui vont avec.",
 };
 
+// Adresse de la page Contact, fournie à la construction (jamais dans le dépôt). Vide :
+// ni page /contact/ ni lien au pied de page.
+export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
+
 // Laisse url vide pour masquer un lien.
 export const SOCIALS = [
   { label: 'YouTube', url: 'https://www.youtube.com/@zakmaf' },
