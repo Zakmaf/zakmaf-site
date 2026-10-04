@@ -35,14 +35,20 @@ export function imageInfo(src) {
   return memo.get(src);
 }
 
-async function build(src) {
+// Fichier d'origine, dimensions affichées et clé de cache d'une image de /content/images/.
+async function inspect(src) {
   const file = `${SOURCE}/${decodeURIComponent(src.slice('/content/images/'.length))}`;
   const { size, mtimeMs } = await stat(file);
   const meta = await sharp(file).metadata();
   // Orientation EXIF 5 à 8 : l'image affichée est tournée d'un quart de tour.
   const [width, height] = meta.orientation >= 5 ? [meta.height, meta.width] : [meta.width, meta.height];
-  if (!width || !height) return null;
   const key = createHash('sha1').update(`${src}:${size}:${mtimeMs}`).digest('hex').slice(0, 12);
+  return { file, width, height, key };
+}
+
+async function build(src) {
+  const { file, width, height, key } = await inspect(src);
+  if (!width || !height) return null;
   // Pas d'agrandissement : les largeurs au-delà de l'original sont remplacées par l'original.
   const widths = [...new Set([...WIDTHS.filter((w) => w < width), Math.min(width, WIDTHS.at(-1))])];
   await mkdir(VARIANTS_DIR, { recursive: true });
@@ -54,6 +60,31 @@ async function build(src) {
     srcset.push(`${URL_PREFIX}/${name} ${w}w`);
   }
   return { width, height, srcset: srcset.join(', ') };
+}
+
+// Image de partage (Open Graph) : variante JPEG de 1200 px de large au plus, que tous les
+// réseaux acceptent, avec ses dimensions. Sans variante possible, l'image telle quelle.
+const SHARE_WIDTH = 1200;
+const shareMemo = new Map();
+
+export function shareImage(src) {
+  if (!src) return Promise.resolve(null);
+  if (!ENABLED || !src.startsWith('/content/images/') || !FORMATS.test(src)) return Promise.resolve({ src });
+  if (!shareMemo.has(src)) shareMemo.set(src, buildShare(src).catch(() => ({ src })));
+  return shareMemo.get(src);
+}
+
+async function buildShare(src) {
+  const { file, width, height, key } = await inspect(src);
+  if (!width || !height) return { src };
+  const w = Math.min(width, SHARE_WIDTH);
+  const name = `${key}-${w}.jpg`;
+  const out = `${VARIANTS_DIR}/${name}`;
+  await mkdir(VARIANTS_DIR, { recursive: true });
+  if (!existsSync(out)) {
+    await sharp(file).rotate().resize({ width: w }).flatten({ background: '#ffffff' }).jpeg({ quality: 82, mozjpeg: true }).toFile(out);
+  }
+  return { src: `${URL_PREFIX}/${name}`, type: 'image/jpeg', width: w, height: Math.round((height * w) / width) };
 }
 
 // Attributs à poser sur une balise <img> à partir de imageInfo() (à étaler en Astro).
