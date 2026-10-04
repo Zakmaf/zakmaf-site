@@ -4,6 +4,4 @@ dist/
 .vscode/
 .env*
 public/ghost/
-public/youtube-latest.jpg
-src/data/youtube.json
 .cache/

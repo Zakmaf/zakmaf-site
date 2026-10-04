@@ -1,16 +1,10 @@
 import { execSync } from 'node:child_process';
-import { setDefaultResultOrder } from 'node:dns';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { publish } from './publish.mjs';
 
-const { GHOST_API_URL: API, GHOST_CONTENT_KEY: KEY, YOUTUBE_CHANNEL_ID: YT } = process.env;
+const { GHOST_API_URL: API, GHOST_CONTENT_KEY: KEY } = process.env;
 const HEADERS = { 'X-Forwarded-Proto': 'https' };
-
-// Le flux RSS de YouTube répond 404 à certaines adresses IPv4 de serveurs et 200 en IPv6 :
-// IPv6 d'abord quand le conteneur en dispose (bascule automatique sur IPv4 sinon).
-setDefaultResultOrder('ipv6first');
 const INTERVAL = 60_000;
-const YT_EVERY = 15; // vérification YouTube tous les 15 cycles
 
 async function latest(type) {
   const url = `${API}/ghost/api/content/${type}/?key=${KEY}&limit=1&order=updated_at%20desc&fields=updated_at`;
@@ -29,34 +23,6 @@ async function fetchCardAssets() {
   }
 }
 
-const decode = (s) =>
-  s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, '&');
-
-async function latestVideo() {
-  const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${YT}`);
-  if (!res.ok) throw new Error(`feed ${res.status}`);
-  const entries = (await res.text()).split('<entry>').slice(1);
-  const e = entries.find((x) => !x.includes('/shorts/')) ?? entries[0];
-  if (!e) return null;
-  const pick = (re) => e.match(re)?.[1] ?? '';
-  return {
-    id: pick(/<yt:videoId>([^<]+)</),
-    title: decode(pick(/<title>([^<]+)</)),
-    published: pick(/<published>([^<]+)</),
-  };
-}
-
-async function saveVideo(v) {
-  let img;
-  for (const name of ['maxresdefault', 'mqdefault']) {
-    const r = await fetch(`https://i.ytimg.com/vi/${v.id}/${name}.jpg`);
-    if (r.ok) { img = Buffer.from(await r.arrayBuffer()); break; }
-  }
-  await mkdir('src/data', { recursive: true });
-  if (img) await writeFile('public/youtube-latest.jpg', img);
-  await writeFile('src/data/youtube.json', JSON.stringify({ ...v, hasImage: Boolean(img) }));
-}
-
 async function build() {
   const steps = [
     'npm run build',
@@ -70,27 +36,12 @@ async function build() {
 }
 
 let last = null;
-let video = null;
-let cycle = 0;
-let ytNext = 0; // cycle de la prochaine vérification YouTube
 while (true) {
   try {
-    if (YT && cycle >= ytNext) {
-      try {
-        video = (await latestVideo()) ?? video;
-        ytNext = cycle + YT_EVERY;
-      } catch (e) {
-        // Le flux renvoie parfois des 404 passagers : nouvel essai au cycle suivant.
-        console.error(`youtube: ${e.message}`);
-        ytNext = cycle + 1;
-      }
-    }
-    cycle++;
-    const fp = `${await latest('posts')}#${await latest('pages')}#${video?.id ?? ''}`;
+    const fp = `${await latest('posts')}#${await latest('pages')}`;
     if (fp !== last) {
       console.log(`change detected (${fp}), building`);
       await fetchCardAssets();
-      if (video) await saveVideo(video);
       await build();
       last = fp;
       console.log('build ok');

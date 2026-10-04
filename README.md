@@ -13,7 +13,6 @@ changement. Le contenu (articles, images) n'est pas dans ce dépôt.
 | `GHOST_API_URL` | URL interne de Ghost |
 | `GHOST_CONTENT_KEY` | Clé de la Content API |
 | `GHOST_PUBLIC_URL` | URL publique déclarée dans Ghost (réécriture des liens d'images) |
-| `YOUTUBE_CHANNEL_ID` | Chaîne dont la dernière vidéo est affichée en accueil |
 | `MOCK_POSTS` | Nombre d'articles de test à ajouter (0 en production) |
 | `GHOST_IMAGES_DIR` | Dossier des images de Ghost (`/ghost-images` par défaut) |
 
