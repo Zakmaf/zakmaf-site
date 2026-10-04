@@ -1,13 +1,13 @@
 name: image
 # PR et main : vérification (secrets, construction du site, construction de l'image).
-# Release GitHub publiée : construction et publication de l'image sur GHCR.
+# Tag vX.Y.Z poussé : mêmes vérifications, publication de l'image sur GHCR, puis création
+# de la release GitHub à partir de docs/RELEASES.md.
 on:
   push:
     branches: [main]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
   pull_request:
     branches: [main]
-  release:
-    types: [published]
 permissions: {}
 # Une PR mise à jour annule son run précédent ; les runs sur main vont jusqu'au bout.
 concurrency:
@@ -15,8 +15,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   secrets:
-    # Le code d'une release a déjà été analysé lors de son arrivée sur main.
-    if: github.event_name != 'release'
+    # Sur un tag, le code a déjà été analysé à son arrivée sur main (et un push de tag ne
+    # porte aucun commit à analyser).
+    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -44,10 +45,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # Release : le tag doit correspondre à la version de package.json (vX.Y.Z).
-      - if: github.event_name == 'release'
+      # Tag : il doit correspondre à la version de package.json (vX.Y.Z).
+      - if: github.ref_type == 'tag'
         env:
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
         run: |
           expected="v$(node -p 'require("./package.json").version')"
           if [ "$TAG" != "$expected" ]; then
@@ -59,7 +60,7 @@ jobs:
       - run: npm run build
   build:
     needs: [secrets, check]
-    # « secrets » est ignoré sur une release : on continue si check a réussi.
+    # « secrets » est ignoré sur un tag : on continue si check a réussi.
     if: ${{ !cancelled() && needs.check.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.secrets.result) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -67,8 +68,8 @@ jobs:
       contents: read
       packages: write
     env:
-      # Publication uniquement sur une release publiée ; ailleurs, l'image est construite sans être poussée.
-      PUBLISH: ${{ github.event_name == 'release' }}
+      # Publication uniquement sur un tag de version ; ailleurs, l'image est construite sans être poussée.
+      PUBLISH: ${{ github.ref_type == 'tag' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -86,10 +87,10 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           # latest, vMAJEUR, vMAJEUR.MINEUR et vMAJEUR.MINEUR.PATCH ; pas de latest pour une préversion.
           tags: |
-            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}.{{minor}}
-            type=semver,pattern=v{{major}},enable=${{ !startsWith(github.event.release.tag_name, 'v0.') }}
+            type=semver,pattern=v{{major}},enable=${{ !startsWith(github.ref_name, 'v0.') }}
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
@@ -98,3 +99,28 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  release:
+    needs: build
+    # Condition explicite : « secrets », sauté sur un tag, ferait sinon sauter ce job aussi.
+    if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Notes : section « ## vX.Y.Z - date » de docs/RELEASES.md, jusqu'à la version suivante.
+      - run: |
+          awk -v t="## $TAG " 'index($0, t) == 1 { f = 1; next } f && /^## v/ { exit } f' docs/RELEASES.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::Aucune entrée pour $TAG dans docs/RELEASES.md"
+            exit 1
+          fi
+          flags=""
+          case "$TAG" in *-*) flags="--prerelease" ;; esac
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file notes.md $flags
