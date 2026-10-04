@@ -175,6 +175,15 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 .file-card:hover .title { color: var(--accent); }
 .file-card:hover { border-color: var(--accent); }
 
+/* Pagination des sections : plus récents à gauche, plus anciens à droite. */
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; margin-top: 2rem; }
+.pager a { font-weight: 600; text-decoration: none; padding: .45rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); }
+.pager a:hover { border-color: var(--accent); color: var(--accent); }
+.pager .prev::before { content: '← ' / ''; }
+.pager .next::after { content: ' →' / ''; }
+.pager .label { color: var(--muted); }
+.pager .next { margin-left: auto; }
+
 /* ---------- Thèmes ---------- */
 .chips { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: .75rem 0 0; padding: 0; }
 .chips a {
