@@ -4,6 +4,7 @@ import '@fontsource-variable/newsreader/wght-italic.css';
 import '@fontsource-variable/jetbrains-mono';
 import { SITE, LABELS, SOCIALS, AUTHOR } from '../lib/site.js';
 import { getTopics } from '../lib/ghost.js';
+import pkg from '../../package.json';
 import '../styles/global.css';
 const { title, description = SITE.description, image } = Astro.props;
 const fullTitle = title ? `${title} – ${SITE.title}` : SITE.homeTitle;
@@ -15,6 +16,8 @@ const ogDefault = !image;
 // Signature « zakmaf.net » : point en paprika, extension en italique.
 const [brandName, brandTld] = SITE.brand.split('.');
 const year = new Date().getFullYear();
+// Version publiée (package.json, alignée sur le tag de la release GitHub).
+const version = `v${pkg.version}`;
 const hasTopics = (await getTopics()).length > 0;
 ---
 <!doctype html>
@@ -80,7 +83,7 @@ const hasTopics = (await getTopics()).length > 0;
           {SOCIALS.filter((s) => s.url).map((s) => <a href={s.url} rel="me noopener">{s.label}</a>)}
           <a href="/rss.xml">RSS</a>
         </div>
-        <p class="footer-legal">© {year} {AUTHOR.name} · <a href="https://github.com/Zakmaf/zakmaf-site">code source sur GitHub</a></p>
+        <p class="footer-legal">© {year} {AUTHOR.name} · <a href="https://github.com/Zakmaf/zakmaf-site">code source sur GitHub</a> · <a href={`https://github.com/Zakmaf/zakmaf-site/releases/tag/${version}`}>{version}</a></p>
       </div>
     </footer>
     <script is:inline>
