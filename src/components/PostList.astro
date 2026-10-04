@@ -5,7 +5,7 @@ const fmt = (d) =>
   new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 {posts.length === 0 ? (
-  <p class="meta">Aucun article pour le moment.</p>
+  <p class="meta">Rien ici pour l'instant, mais on y reviendra.</p>
 ) : (
   <ul class="post-list">
     {posts.map((p) => (

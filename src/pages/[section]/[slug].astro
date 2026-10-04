@@ -94,8 +94,8 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
   </article>
   {(older || newer) && (
     <nav class="post-nav narrow" aria-label="Autres articles">
-      {older && <a class="prev" href={older.href}><span>← Précédent</span>{older.title}</a>}
-      {newer && <a class="next" href={newer.href}><span>Suivant →</span>{newer.title}</a>}
+      {older && <a class="prev" href={older.href}><span>← Plus ancien</span>{older.title}</a>}
+      {newer && <a class="next" href={newer.href}><span>Plus récent →</span>{newer.title}</a>}
     </nav>
   )}
 </Base>
