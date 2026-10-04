@@ -83,7 +83,9 @@ sont relues à la main. Ces mises à jour partent avec la release suivante.
   dans le pied de page. Elle est mise à jour **avant** la release, dans une PR dédiée.
 - Chaque version a une entrée dans [docs/RELEASES.md](docs/RELEASES.md), au format ci-dessous.
 - Publier = pousser le tag `vX.Y.Z` sur le commit de `main` à publier
-  (`git tag vX.Y.Z origin/main && git push origin vX.Y.Z`). La CI vérifie, construit et
+  (`git tag vX.Y.Z origin/main && git push origin vX.Y.Z`), ou lancer le workflow `image`
+  à la main sur `main` avec la version `X.Y.Z` (onglet *Actions*, *Run workflow* ; c'est
+  le chemin d'un agent qui ne peut pas pousser de tag). La CI vérifie, construit et
   pousse l'image sur `ghcr.io/zakmaf/zakmaf-site` sous `latest`, `vMAJEUR`,
   `vMAJEUR.MINEUR` et `vMAJEUR.MINEUR.PATCH`, puis crée la release GitHub avec la section
   de la version dans `docs/RELEASES.md`. Une préversion (`v1.1.0-rc.1`) est publiée comme
