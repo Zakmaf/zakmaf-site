@@ -2,7 +2,7 @@
 import '@fontsource-variable/newsreader';
 import '@fontsource-variable/newsreader/wght-italic.css';
 import '@fontsource-variable/jetbrains-mono';
-import { SITE, LABELS, SOCIALS, AUTHOR } from '../lib/site.js';
+import { SITE, LABELS, SOCIALS, AUTHOR, CONTACT_EMAIL } from '../lib/site.js';
 import { getTopics } from '../lib/ghost.js';
 import pkg from '../../package.json';
 import '../styles/global.css';
@@ -96,7 +96,7 @@ const hasTopics = (await getTopics()).length > 0;
         <div class="footer-col">
           <span class="label">Le site</span>
           <a href="/a-propos/">À propos</a>
-          <a href="/contact/">Contact</a>
+          {CONTACT_EMAIL && <a href="/contact/">Contact</a>}
           <a href="/recherche/">Recherche</a>
         </div>
         <div class="footer-col">

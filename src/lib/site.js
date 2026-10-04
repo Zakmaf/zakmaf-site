@@ -23,7 +23,7 @@ export const AUTHOR = {
 };
 
 // Adresse de la page Contact, fournie à la construction (jamais dans le dépôt). Vide :
-// la page ne propose que les réseaux.
+// ni page /contact/ ni lien au pied de page.
 export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
 
 // Laisse url vide pour masquer un lien.
