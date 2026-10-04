@@ -82,12 +82,15 @@ sont relues à la main. Ces mises à jour partent avec la release suivante.
 - La version vit dans `package.json` (`npm version X.Y.Z --no-git-tag-version`) et s'affiche
   dans le pied de page. Elle est mise à jour **avant** la release, dans une PR dédiée.
 - Chaque version a une entrée dans [docs/RELEASES.md](docs/RELEASES.md), au format ci-dessous.
-- La release GitHub se crée depuis `main` après fusion, avec le tag `vX.Y.Z` et le texte de
-  l'entrée de `docs/RELEASES.md`. Sa publication construit et pousse l'image sur
-  `ghcr.io/zakmaf/zakmaf-site` sous les tags `latest`, `vMAJEUR`, `vMAJEUR.MINEUR` et
-  `vMAJEUR.MINEUR.PATCH`. Une préversion (`v1.1.0-rc.1`, case « pre-release ») ne déplace
-  pas `latest`.
-- La CI refuse une release dont le tag ne correspond pas à la version de `package.json`.
+- Publier = pousser le tag `vX.Y.Z` sur le commit de `main` à publier
+  (`git tag vX.Y.Z origin/main && git push origin vX.Y.Z`). La CI vérifie, construit et
+  pousse l'image sur `ghcr.io/zakmaf/zakmaf-site` sous `latest`, `vMAJEUR`,
+  `vMAJEUR.MINEUR` et `vMAJEUR.MINEUR.PATCH`, puis crée la release GitHub avec la section
+  de la version dans `docs/RELEASES.md`. Une préversion (`v1.1.0-rc.1`) est publiée comme
+  telle et ne déplace pas `latest`.
+- La CI refuse un tag qui ne correspond pas à la version de `package.json`, et une version
+  sans entrée dans `docs/RELEASES.md`. Ne pas créer la release à la main sur GitHub : le
+  workflow s'en charge.
 - **Approbation obligatoire** : aucun agent (Claude, Codex, etc.) ne crée ni ne publie de
   release, ne crée ni ne pousse de tag, ne relance le workflow de publication ni ne déploie
   sans l'accord explicite du propriétaire du dépôt, demandé à chaque fois.
@@ -98,9 +101,9 @@ Chaque état se vérifie séparément, jamais par déduction du précédent :
 
 1. **Source préparée** : version mise à jour dans `package.json`, entrée ajoutée dans
    `docs/RELEASES.md`, PR fusionnée dans `main`. Rien n'est publié.
-2. **Release publiée** : la release GitHub existe ; elle déclenche `image.yml`.
-3. **Image publiée** : le run de `image.yml` sur la release est vert et les tags existent
-   sur GHCR (onglet *Packages* du dépôt).
+2. **Tag poussé** : le tag `vX.Y.Z` existe ; il déclenche `image.yml`.
+3. **Image et release publiées** : le run de `image.yml` sur le tag est vert, les tags
+   existent sur GHCR (onglet *Packages*) et la release GitHub est créée.
 4. **Production déployée** : le serveur exécute la nouvelle image (nouveau tirage de l'image
    épinglée) et le pied de page du site affiche la nouvelle version. Action hors dépôt, faite
    par le propriétaire.

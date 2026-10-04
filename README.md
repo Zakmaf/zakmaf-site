@@ -40,7 +40,7 @@ configuration réelle du serveur n'est pas dans ce dépôt.
 
 ## Versions
 
-L'image est publiée à chaque release GitHub ([historique](docs/RELEASES.md)) :
+L'image est publiée à chaque version taguée `vX.Y.Z`, avec sa release GitHub ([historique](docs/RELEASES.md)) :
 
 | Tag | Usage |
 |---|---|
