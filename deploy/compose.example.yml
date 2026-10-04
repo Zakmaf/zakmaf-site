@@ -52,9 +52,9 @@ services:
     networks: [internal]
 
   # Interroge Ghost toutes les 60 s, reconstruit le site à chaque changement et le
-  # publie dans /out. Tags disponibles : latest, ou sha-<court> pour épingler une version.
+  # publie dans /out. Tags : v1 (suit les versions 1.x), v1.0.0 (version exacte), latest.
   site-builder:
-    image: ghcr.io/zakmaf/zakmaf-site:latest
+    image: ghcr.io/zakmaf/zakmaf-site:v1
     restart: unless-stopped
     depends_on: [ghost]
     environment:

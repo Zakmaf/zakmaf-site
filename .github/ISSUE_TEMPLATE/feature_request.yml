@@ -1,0 +1,16 @@
+name: Idée ou amélioration
+description: Proposer une fonctionnalité ou une amélioration du site
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Besoin
+      description: Quel problème cela résout-il, pour qui ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposition
+    attributes:
+      label: Proposition
+      description: Ce que vous imaginez, et les alternatives envisagées.

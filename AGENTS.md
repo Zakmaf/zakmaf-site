@@ -20,8 +20,9 @@ Chaîne de publication :
 3. Un serveur web sert `/out` en lecture seule.
 
 L'image Docker ne contient que le code : le site est généré au démarrage du conteneur.
-Elle est publiée par la CI sur `ghcr.io/zakmaf/zakmaf-site` après fusion dans `main` ;
-la mise en production est un nouveau tirage manuel de l'image par le mainteneur.
+Elle est publiée par la CI sur `ghcr.io/zakmaf/zakmaf-site` à chaque release GitHub
+(tags `latest`, `vX`, `vX.Y`, `vX.Y.Z`), pas à chaque fusion dans `main`. La mise en
+production est un nouveau tirage manuel de l'image par le mainteneur.
 
 ## Carte du code
 
@@ -88,3 +89,19 @@ Toute configuration passe par les variables d'environnement décrites dans le RE
 - Auteur : l'adresse `noreply` de GitHub, jamais une adresse personnelle.
 - `npm run build` doit passer en local ; en CI, `secrets`, `check` et `build` doivent être
   verts.
+- Ni tiret cadratin (`—`) ni émoji, dans le code, la documentation, les commits et les notes
+  de version.
+
+## Releases
+
+Processus complet dans [CONTRIBUTING.md](CONTRIBUTING.md#releases). En résumé :
+
+- Versionnement sémantique ; la version vit dans `package.json` et s'affiche dans le pied de
+  page. Chaque version a une entrée dans `docs/RELEASES.md` (Nouveautés, Améliorations,
+  Correctifs, Sécurité, Mise à jour de la stack, Migration ; sections vides omises sauf
+  Migration).
+- Préparer une release = PR qui met à jour `package.json` et `docs/RELEASES.md`.
+- **Ne jamais** créer ou publier une release, créer ou pousser un tag, relancer le workflow
+  de publication ni déployer sans l'accord explicite du propriétaire, demandé à chaque fois.
+- Ne pas confondre « fusionné », « release publiée », « image publiée » et « en production » :
+  vérifier chaque état séparément.

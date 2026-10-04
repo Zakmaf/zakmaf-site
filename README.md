@@ -38,6 +38,19 @@ Le dossier [`deploy/`](deploy/) contient un exemple complet et générique : `co
 `nginx.conf`. Domaines, chemins et exposition y sont des exemples à adapter ; la
 configuration réelle du serveur n'est pas dans ce dépôt.
 
+## Versions
+
+L'image est publiée à chaque release GitHub ([historique](docs/RELEASES.md)) :
+
+| Tag | Usage |
+|---|---|
+| `latest` | Dernière version stable |
+| `v1` | Dernière 1.x : correctifs et nouveautés, sans changement de rupture (recommandé) |
+| `v1.0` | Dernière 1.0.x : correctifs seulement |
+| `v1.0.0` | Version exacte, pour épingler ou revenir en arrière |
+
+La version en production s'affiche dans le pied de page du site.
+
 ## Contribuer
 
 Voir [CONTRIBUTING.md](CONTRIBUTING.md).
