@@ -67,13 +67,17 @@ async function build() {
 let last = null;
 let video = null;
 let cycle = 0;
+let ytNext = 0; // cycle de la prochaine vérification YouTube
 while (true) {
   try {
-    if (YT && cycle % YT_EVERY === 0) {
+    if (YT && cycle >= ytNext) {
       try {
         video = (await latestVideo()) ?? video;
+        ytNext = cycle + YT_EVERY;
       } catch (e) {
+        // Le flux renvoie parfois des 404 passagers : nouvel essai au cycle suivant.
         console.error(`youtube: ${e.message}`);
+        ytNext = cycle + 1;
       }
     }
     cycle++;
