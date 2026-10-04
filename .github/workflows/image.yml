@@ -1,14 +1,26 @@
 name: image
 # PR et main : vérification (secrets, construction du site, construction de l'image).
-# Tag vX.Y.Z poussé : mêmes vérifications, publication de l'image sur GHCR, puis création
-# de la release GitHub à partir de docs/RELEASES.md.
+# Version publiée, au choix :
+# - tag vX.Y.Z poussé ;
+# - lancement manuel sur main avec la version X.Y.Z (le tag est alors créé par la release).
+# Dans les deux cas : mêmes vérifications, image publiée sur GHCR, puis release GitHub
+# créée avec la section de la version dans docs/RELEASES.md.
 on:
   push:
     branches: [main]
     tags: ['v[0-9]+.[0-9]+.[0-9]+*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version à publier, sans « v » (ex. 1.0.0) ; doit égaler celle de package.json
+        required: true
+        type: string
 permissions: {}
+env:
+  # Tag de la version publiée (vide hors publication).
+  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.version && format('v{0}', inputs.version)) || '' }}
 # Une PR mise à jour annule son run précédent ; les runs sur main vont jusqu'au bout.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,14 +57,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # Tag : il doit correspondre à la version de package.json (vX.Y.Z).
-      - if: github.ref_type == 'tag'
-        env:
-          TAG: ${{ github.ref_name }}
+      # Publication : depuis main seulement, et version égale à celle de package.json.
+      - if: env.RELEASE_TAG != ''
         run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::Publication manuelle possible uniquement depuis main"
+            exit 1
+          fi
           expected="v$(node -p 'require("./package.json").version')"
-          if [ "$TAG" != "$expected" ]; then
-            echo "::error::Tag $TAG différent de la version de package.json ($expected)"
+          if [ "$RELEASE_TAG" != "$expected" ]; then
+            echo "::error::Version $RELEASE_TAG différente de celle de package.json ($expected)"
             exit 1
           fi
       - run: npm ci
@@ -68,8 +82,8 @@ jobs:
       contents: read
       packages: write
     env:
-      # Publication uniquement sur un tag de version ; ailleurs, l'image est construite sans être poussée.
-      PUBLISH: ${{ github.ref_type == 'tag' }}
+      # Publication uniquement pour une version ; ailleurs, l'image est construite sans être poussée.
+      PUBLISH: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,10 +101,10 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           # latest, vMAJEUR, vMAJEUR.MINEUR et vMAJEUR.MINEUR.PATCH ; pas de latest pour une préversion.
           tags: |
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}.{{minor}}
-            type=semver,pattern=v{{major}},enable=${{ !startsWith(github.ref_name, 'v0.') }}
+            type=raw,value=latest,enable=${{ env.RELEASE_TAG != '' && !contains(env.RELEASE_TAG, '-') }}
+            type=semver,pattern=v{{version}},value=${{ env.RELEASE_TAG }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ env.RELEASE_TAG }}
+            type=semver,pattern=v{{major}},value=${{ env.RELEASE_TAG }},enable=${{ !startsWith(env.RELEASE_TAG, 'v0.') }}
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
@@ -102,13 +116,13 @@ jobs:
   release:
     needs: build
     # Condition explicite : « secrets », sauté sur un tag, ferait sinon sauter ce job aussi.
-    if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result == 'success' }}
+    if: ${{ !cancelled() && (github.ref_type == 'tag' || github.event_name == 'workflow_dispatch') && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
     env:
-      TAG: ${{ github.ref_name }}
+      TAG: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.version && format('v{0}', inputs.version)) || '' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -123,4 +137,10 @@ jobs:
           fi
           flags=""
           case "$TAG" in *-*) flags="--prerelease" ;; esac
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file notes.md $flags
+          # Release déjà créée à la main : on aligne son texte ; sinon, création (et du tag,
+          # sur ce commit, en lancement manuel).
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file notes.md
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$TAG" --notes-file notes.md $flags
+          fi

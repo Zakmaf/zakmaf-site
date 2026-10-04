@@ -102,7 +102,8 @@ Processus complet dans [CONTRIBUTING.md](CONTRIBUTING.md#releases). En résumé 
   Correctifs, Sécurité, Mise à jour de la stack, Migration ; sections vides omises sauf
   Migration).
 - Préparer une release = PR qui met à jour `package.json` et `docs/RELEASES.md`. Publier =
-  pousser le tag `vX.Y.Z` sur `main` ; la CI crée l'image et la release.
+  pousser le tag `vX.Y.Z` sur `main`, ou lancer le workflow `image` sur `main` avec
+  `version: X.Y.Z` ; la CI crée l'image, le tag et la release.
 - **Ne jamais** créer ou publier une release, créer ou pousser un tag, relancer le workflow
   de publication ni déployer sans l'accord explicite du propriétaire, demandé à chaque fois.
 - Ne pas confondre « fusionné », « tag poussé », « image et release publiées » et « en production » :
