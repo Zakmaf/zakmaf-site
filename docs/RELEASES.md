@@ -3,6 +3,36 @@
 Historique des versions publiées. Format et règles de rédaction : voir
 [CONTRIBUTING.md](../CONTRIBUTING.md#rédaction-des-notes-de-version).
 
+## v1.1.0 - 2026-10-04
+
+### Nouveautés
+
+- Page Contact : l'adresse e-mail s'affiche d'un clic, sans être lisible en clair par les robots dans le code de la page, avec un mot pour les créateurs qui proposent une collab. La page n'existe que si l'adresse est configurée. #55
+- Pagination des sections au-delà de 24 articles (`/videos/2/`...), avec liens vers les articles plus récents et plus anciens. #26
+- Métadonnées SEO et de partage saisies dans Ghost prises en compte : titre et description pour les moteurs de recherche, URL canonique, cartes Facebook et X. #57
+- Dates de publication et de mise à jour, section et thèmes de chaque article annoncés aux réseaux et aux moteurs de recherche. #57
+
+### Améliorations
+
+- Navigation réorganisée : sections et Thèmes à gauche, recherche et thème clair ou sombre à droite ; À propos et Recherche rejoignent une colonne « Le site » au pied de page. #53
+- Image de partage des articles en JPEG de 1200 px avec ses dimensions, acceptée par tous les réseaux. #57
+- Texte alternatif des couvertures repris de Ghost. #57
+- Description de l'accueil dédiée aux moteurs de recherche. #57
+- Textes d'interface plus naturels, dans le ton des articles : accueil, intros des sections, page introuvable, recherche sans résultat, navigation entre articles. #56
+
+### Correctifs
+
+- Navigation mobile : À propos, Recherche et le bouton de thème ne sortent plus de l'écran ; les sections passent à la ligne au lieu de défiler. #54
+
+### Migration
+
+Aucune action requise. Pour afficher la page Contact, ajouter la variable `CONTACT_EMAIL` au conteneur
+du builder (voir `deploy/example.env`) ; sans elle, le site ne propose pas de page Contact.
+
+```bash
+docker pull ghcr.io/zakmaf/zakmaf-site:v1.1.0
+```
+
 ## v1.0.0 - 2026-10-04
 
 Première version numérotée : elle fixe l'état du site en production et inaugure la publication
