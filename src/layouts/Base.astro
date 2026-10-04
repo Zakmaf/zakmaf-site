@@ -66,16 +66,20 @@ const hasTopics = (await getTopics()).length > 0;
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/">{brandName}<span class="dot">.</span><span class="tld">{brandTld}</span></a>
-      <nav>
+      <a class="brand" href="/" aria-label={`${SITE.brand}, accueil`}>{brandName}<span class="dot">.</span><span class="tld">{brandTld}</span></a>
+      <!-- Contenu à gauche (sections et thèmes), outils à droite. À propos est au pied de page. -->
+      <nav class="sections" aria-label="Sections">
         {Object.entries(LABELS).map(([slug, label]) => (
           <a href={`/${slug}/`} aria-current={current === slug ? 'page' : undefined}>{label}</a>
         ))}
         {hasTopics && <a href="/themes/" aria-current={current === 'themes' ? 'page' : undefined}>Thèmes</a>}
-        <a href="/a-propos/" aria-current={current === "a-propos" ? "page" : undefined}>À propos</a>
-        <a href="/recherche/" aria-current={current === 'recherche' ? 'page' : undefined}>Recherche</a>
-        <button id="theme-toggle" type="button" aria-label="Changer de thème">◐</button>
       </nav>
+      <div class="tools">
+        <a class="tool" href="/recherche/" aria-label="Recherche" title="Recherche" aria-current={current === 'recherche' ? 'page' : undefined}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
+        </a>
+        <button id="theme-toggle" class="tool" type="button" aria-label="Changer de thème" title="Changer de thème">◐</button>
+      </div>
     </header>
     <main><slot /></main>
     <footer class="site-footer">
@@ -88,6 +92,9 @@ const hasTopics = (await getTopics()).length > 0;
           <span class="label">Sections</span>
           {Object.entries(LABELS).map(([slug, label]) => <a href={`/${slug}/`}>{label}</a>)}
           {hasTopics && <a href="/themes/">Thèmes</a>}
+        </div>
+        <div class="footer-col">
+          <span class="label">Le site</span>
           <a href="/a-propos/">À propos</a>
           <a href="/recherche/">Recherche</a>
         </div>
