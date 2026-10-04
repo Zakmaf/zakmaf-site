@@ -55,8 +55,8 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 .narrow { max-width: 46rem; margin-inline: auto; }
 
 .site-header {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: .5rem 1.5rem; padding-block: 1.25rem; border-bottom: 2px solid var(--fg);
+  display: flex; align-items: center;
+  flex-wrap: wrap; gap: .75rem 2rem; padding-block: 1.25rem; border-bottom: 2px solid var(--fg);
 }
 .brand { font: 750 1.6rem/1 var(--serif); letter-spacing: -.02em; text-decoration: none; color: var(--fg); }
 .brand .dot { color: var(--accent); }
@@ -65,11 +65,15 @@ main { flex: 1; padding-block: 2.5rem 3.5rem; }
 .site-header nav a { text-decoration: none; color: var(--muted); padding-block: .25rem; border-bottom: 2px solid transparent; }
 .site-header nav a:hover { color: var(--fg); }
 .site-header nav a[aria-current='page'] { color: var(--fg); border-bottom-color: var(--accent); }
-#theme-toggle {
-  font: inherit; font-size: 1.1rem; line-height: 1; padding: .3rem .45rem; cursor: pointer;
+/* Outils (recherche, thème) : boutons carrés alignés à droite. */
+.tools { display: flex; gap: .5rem; margin-left: auto; }
+.tool {
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  font: inherit; font-size: 1.1rem; line-height: 1; cursor: pointer; text-decoration: none;
   color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 6px;
 }
-#theme-toggle:hover { color: var(--fg); }
+.tool:hover { color: var(--fg); }
+.tool[aria-current='page'] { color: var(--fg); border-color: var(--accent); }
 
 .site-footer { background: var(--footer-bg); color: var(--footer-fg); }
 .footer-inner { display: flex; flex-wrap: wrap; gap: 1.75rem 4rem; padding-block: 2.5rem 2rem; }
@@ -300,12 +304,11 @@ article .body pre code { font-size: 1em; background: none; border: 0; padding: 0
   .home-top { padding-top: .25rem; }
   .hero-bio { align-items: flex-start; }
   .hero-bio img { width: 3.5rem; height: 3.5rem; }
-  /* Navigation en puces défilantes sous la signature. */
-  .site-header nav { flex-wrap: nowrap; overflow-x: auto; width: 100%; gap: .4rem; padding-bottom: .15rem; scrollbar-width: none; }
-  .site-header nav a { flex: none; padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); }
+  /* Signature et outils sur la première ligne, sections en puces sur la seconde. */
+  .site-header nav { order: 1; width: 100%; gap: .4rem; }
+  .site-header nav a { padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); }
   .site-header nav a[aria-current='page'] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
-  #theme-toggle { flex: none; margin-left: auto; }
-  /* Pied de page : signature sur toute la largeur, puis les deux colonnes côte à côte. */
+  /* Pied de page : signature sur toute la largeur, puis les colonnes côte à côte. */
   .footer-inner { gap: 1.75rem 3rem; }
   .footer-id { flex-basis: 100%; }
 }
