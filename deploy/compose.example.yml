@@ -1,0 +1,94 @@
+# Exemple de déploiement complet : Ghost (headless, privé) + MySQL + builder + nginx.
+#
+# Modèle générique, à adapter : domaines, chemins et exposition sont des exemples.
+# Les secrets viennent d'un fichier .env à côté de ce fichier (voir example.env),
+# jamais de ce fichier ni de l'image.
+#
+# Points à respecter :
+# - Ghost n'est jamais exposé publiquement. Son interface d'administration passe par
+#   un accès protégé (VPN, tunnel SSH, ou reverse proxy avec authentification).
+# - Chemins absolus pour les volumes (pas de chemins relatifs dans Portainer).
+# - Pas de « user: » sur ghost ni sur db : leurs images gèrent leurs propres droits.
+# - Le dossier du site (ici /srv/zakmaf-site/www) doit appartenir à l'UID 1001, celui du builder.
+
+services:
+  ghost:
+    image: ghost:6-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # URL déclarée dans Ghost (admin et liens d'images) ; reprise dans GHOST_PUBLIC_URL.
+      url: https://ghost.example.com
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: ghost
+      database__connection__password: ${GHOST_DB_PASSWORD}
+      database__connection__database: ghost
+    volumes:
+      - /srv/zakmaf-site/ghost/content:/var/lib/ghost/content
+    networks: [internal]
+    # Accès à l'administration, au choix :
+    # - tunnel SSH vers le port lié à la boucle locale ci-dessous ;
+    # - ou réseau du reverse proxy + route protégée par authentification.
+    # ports:
+    #   - 127.0.0.1:2368:2368
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ghost
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ${GHOST_DB_PASSWORD}
+    volumes:
+      - /srv/zakmaf-site/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 10s
+      retries: 10
+    networks: [internal]
+
+  # Interroge Ghost toutes les 60 s, reconstruit le site à chaque changement et le
+  # publie dans /out. Tags disponibles : latest, ou sha-<court> pour épingler une version.
+  site-builder:
+    image: ghcr.io/zakmaf/zakmaf-site:latest
+    restart: unless-stopped
+    depends_on: [ghost]
+    environment:
+      GHOST_API_URL: http://ghost:2368
+      GHOST_CONTENT_KEY: ${GHOST_CONTENT_KEY}
+      GHOST_PUBLIC_URL: https://ghost.example.com
+      YOUTUBE_CHANNEL_ID: ${YOUTUBE_CHANNEL_ID}
+      MOCK_POSTS: ${MOCK_POSTS:-0}
+    volumes:
+      - /srv/zakmaf-site/www:/out
+      - /srv/zakmaf-site/ghost/content/images:/ghost-images:ro
+    # internal : accès à Ghost. egress6 : sortie IPv6, nécessaire au flux RSS de YouTube,
+    # qui répond 404 à certaines adresses IPv4 de serveurs.
+    networks: [internal, egress6]
+
+  # Sert le site statique en lecture seule. Le placer derrière le reverse proxy (TLS),
+  # ou publier un port pour un essai local.
+  site-web:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - /srv/zakmaf-site/www:/usr/share/nginx/html:ro
+      - /srv/zakmaf-site/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [web]
+    # ports:
+    #   - 8080:80
+
+networks:
+  # Réseau privé de la pile : Ghost, MySQL, builder.
+  internal:
+  # IPv6 pour les requêtes sortantes du builder (Docker 27+ attribue un préfixe privé
+  # et active la traduction d'adresses ; aucun réglage du démon n'est nécessaire).
+  egress6:
+    enable_ipv6: true
+  # Réseau partagé avec le reverse proxy. S'il est créé ailleurs, le déclarer
+  # « external: true » sous le nom utilisé par le proxy.
+  web:

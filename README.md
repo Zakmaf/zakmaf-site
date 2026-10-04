@@ -32,6 +32,13 @@ variantes sont gardées en cache dans le conteneur (`.cache/variants`) : seule u
 nouvelle ou modifiée est recalculée. Sans dossier d'images, le site est construit sans
 variantes.
 
+## Déploiement
+
+Le dossier [`deploy/`](deploy/) contient un exemple complet et générique : `compose.example.yml`
+(Ghost privé, MySQL, builder, nginx), `example.env` (variables à renseigner) et
+`nginx.conf`. Domaines, chemins et exposition y sont des exemples à adapter ; la
+configuration réelle du serveur n'est pas dans ce dépôt.
+
 ## Contribuer
 
 Voir [CONTRIBUTING.md](CONTRIBUTING.md).
