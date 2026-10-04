@@ -3,6 +3,8 @@ export const SITE = {
   brand: 'zakmaf.net',
   homeTitle: 'La prise de note - Zakmaf.net',
   description: 'Quelques commentaires, une dose de poivre et beaucoup de sel',
+  // Description de l'accueil pour les moteurs de recherche (160 caractères au plus).
+  summary: 'Auto-hébergement, alternatives open source, homelab, serveurs et IA : articles, vidéos et fichiers de configuration prêts à copier, en français.',
 };
 
 export const LABELS = { videos: 'Vidéos', boilerplate: 'Boilerplate', blog: 'Blog' };

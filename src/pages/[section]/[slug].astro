@@ -25,7 +25,17 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
   day: 'numeric', month: 'long', year: 'numeric',
 });
 ---
-<Base title={post.title} image={post.feature_image} description={post.custom_excerpt ?? post.excerpt}>
+<Base
+  title={post.title}
+  description={post.seo.description || post.excerpt}
+  seo={post.seo}
+  article={{
+    published: post.published_at,
+    modified: post.updated_at,
+    section: LABELS[post.section],
+    tags: post.topics.map((t) => t.name),
+  }}
+>
   <article class="narrow" data-pagefind-body>
     <header class="post-head">
       <div class="post-tags" data-pagefind-ignore>
@@ -41,11 +51,11 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
     </header>
     {post.feature_image && (post.videoUrl ? (
       <a class="cover-link" href={post.videoUrl} aria-label={`Regarder : ${post.title}`}>
-        <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
+        <img class="cover" src={post.feature_image} alt={post.feature_image_alt ?? ''} {...imgProps(post.feature, SIZES.cover)} />
         <span class="watch-pill" aria-hidden="true">Regarder la vidéo</span>
       </a>
     ) : (
-      <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
+      <img class="cover" src={post.feature_image} alt={post.feature_image_alt ?? ''} {...imgProps(post.feature, SIZES.cover)} />
     ))}
     {post.toc.length > 0 && (
       <nav class="toc" aria-labelledby="toc-title" data-pagefind-ignore>

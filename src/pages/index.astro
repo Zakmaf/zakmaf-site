@@ -34,7 +34,7 @@ const sections = SECTIONS.map((slug) => ({
   posts: posts.filter((p) => p.section === slug && p !== lead).slice(0, 4),
 })).filter((s) => s.posts.length > 0);
 ---
-<Base description={AUTHOR.bio}>
+<Base description={SITE.summary}>
   <div class="home-top">
     <section class="hero">
       <span class="label eyebrow">Carnet de bord · homelab, auto-hébergement et tout ce qui éveille ma curiosité</span>

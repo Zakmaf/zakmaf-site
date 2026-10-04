@@ -7,7 +7,7 @@ import { AUTHOR, SOCIALS } from '../lib/site.js';
 const page = await getPage('a-propos');
 const hasPhoto = existsSync(`public${AUTHOR.photo}`);
 ---
-<Base title="À propos" description={AUTHOR.bio}>
+<Base title="À propos" description={page?.seo.description || AUTHOR.bio} seo={page?.seo}>
   <article class="narrow">
     <header class="post-head">
       <h1>{page?.title ?? 'À propos'}</h1>
@@ -15,7 +15,7 @@ const hasPhoto = existsSync(`public${AUTHOR.photo}`);
     {hasPhoto && !page?.feature_image && (
       <img src={AUTHOR.photo} alt={AUTHOR.name} width="160" height="160" style="border-radius:50%;object-fit:cover;margin-bottom:1.5rem" />
     )}
-    {page?.feature_image && <img class="cover" src={page.feature_image} alt="" {...imgProps(page.feature, SIZES.cover)} />}
+    {page?.feature_image && <img class="cover" src={page.feature_image} alt={page.feature_image_alt ?? ''} {...imgProps(page.feature, SIZES.cover)} />}
     <div class="body">
       {page ? <Fragment set:html={page.html} /> : <p>{AUTHOR.name}. {AUTHOR.bio}</p>}
     </div>

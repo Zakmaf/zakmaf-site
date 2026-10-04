@@ -1,6 +1,6 @@
 import { codeToHtml } from 'shiki';
 import { codeLight, codeDark } from './code-theme.js';
-import { imageInfo, optimizeHtml } from './images.js';
+import { imageInfo, optimizeHtml, shareImage } from './images.js';
 
 const API = process.env.GHOST_API_URL;
 const KEY = process.env.GHOST_CONTENT_KEY;
@@ -162,7 +162,14 @@ function mockPosts(n) {
     excerpt: 'Texte de démonstration pour évaluer la mise en page avec un grand nombre d’articles, des titres longs et des extraits qui tiennent sur plusieurs lignes.',
     custom_excerpt: null,
     feature_image: i % 2 ? '/mock.svg' : null,
+    feature_image_alt: i % 2 ? `Illustration de l'article de test ${i + 1}` : null,
+    // Champs SEO de Ghost renseignés sur un article sur quatre.
+    meta_title: i % 4 === 1 ? `Titre SEO de l'article de test ${i + 1}` : null,
+    meta_description: i % 4 === 1 ? `Description SEO de l'article de test ${i + 1}, saisie dans Ghost.` : null,
+    og_title: i % 4 === 1 ? `Titre de partage de l'article de test ${i + 1}` : null,
+    twitter_description: i % 4 === 1 ? `Description X de l'article de test ${i + 1}.` : null,
     published_at: new Date(Date.now() - (i + 1) * 3 * 864e5).toISOString(),
+    updated_at: new Date(Date.now() - (i + 1) * 3 * 864e5 + (i % 3 ? 0 : 864e5)).toISOString(),
     reading_time: 2 + (i % 9),
     tags: [
       { slug: SECTIONS[i % SECTIONS.length], name: SECTIONS[i % SECTIONS.length] },
@@ -235,6 +242,31 @@ async function prepare(p) {
     videoId,
     videoUrl: videoId ? watchUrl(videoId) : null,
     code: section === 'boilerplate' ? await codePreview(p.html) : null,
+    seo: await seoOf(p),
+  };
+}
+
+// Champs SEO et de partage saisis dans Ghost (onglets « Meta data », « X card », « Facebook
+// card » et URL canonique). Un champ vide reste vide : la page applique alors ses valeurs.
+async function seoOf(p) {
+  const image = async (src, alt) => {
+    const img = await shareImage(localize(src));
+    return img && { ...img, alt: alt || null };
+  };
+  return {
+    title: p.meta_title || null,
+    description: p.meta_description || null,
+    canonical: p.canonical_url || null,
+    og: {
+      title: p.og_title || null,
+      description: p.og_description || null,
+      image: p.og_image ? await image(p.og_image) : await image(p.feature_image, p.feature_image_alt),
+    },
+    twitter: {
+      title: p.twitter_title || null,
+      description: p.twitter_description || null,
+      image: p.twitter_image ? await image(p.twitter_image) : null,
+    },
   };
 }
 
@@ -263,5 +295,11 @@ export async function getPage(slug) {
   if (!res.ok) throw new Error(`Ghost API ${res.status} on page ${slug}`);
   const page = (await res.json()).pages[0];
   const image = localize(page.feature_image);
-  return { ...page, html: await optimizeHtml(await highlight(unembed(localize(page.html), null))), feature_image: image, feature: await imageInfo(image) };
+  return {
+    ...page,
+    html: await optimizeHtml(await highlight(unembed(localize(page.html), null))),
+    feature_image: image,
+    feature: await imageInfo(image),
+    seo: await seoOf(page),
+  };
 }
