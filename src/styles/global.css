@@ -287,6 +287,22 @@ article .body pre code { font-size: 1em; background: none; border: 0; padding: 0
 .post-nav span { display: block; font: .8rem/1.6 var(--sans); color: var(--muted); }
 .post-nav .next { text-align: right; grid-column: 2; }
 
+/* ---------- Recherche ---------- */
+.search-form { display: flex; flex-direction: column; gap: .4rem; }
+.search-form input {
+  width: 100%; min-height: 3rem; padding: .6rem .9rem; border: 1px solid var(--fg); border-radius: 8px;
+  background: var(--surface); color: var(--fg); font: 1.1rem/1.3 var(--sans);
+}
+.search-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+#search-status { margin: 1rem 0 0; }
+.search-results { list-style: none; margin: .5rem 0 0; padding: 0; }
+.search-results li { display: flex; flex-direction: column; gap: .2rem; padding-block: 1.1rem; border-bottom: 1px solid var(--line); }
+.search-results .label { color: var(--accent); }
+.search-results .title { font: 600 1.25rem/1.25 var(--serif); color: var(--fg); text-decoration: none; }
+.search-results .title:hover { color: var(--accent); }
+.search-results p { margin: .2rem 0 0; color: var(--muted); font-size: .95rem; }
+.search-results mark { background: none; color: var(--fg); font-weight: 650; box-shadow: inset 0 -.4em 0 color-mix(in srgb, var(--accent) 25%, transparent); }
+
 /* ---------- Mobile (sous 34rem) ---------- */
 @media (max-width: 34rem) {
   main { padding-block: 1.5rem 2.5rem; }

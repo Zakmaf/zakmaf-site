@@ -57,6 +57,7 @@ const hasTopics = (await getTopics()).length > 0;
         ))}
         {hasTopics && <a href="/themes/" aria-current={current === 'themes' ? 'page' : undefined}>Thèmes</a>}
         <a href="/a-propos/" aria-current={current === "a-propos" ? "page" : undefined}>À propos</a>
+        <a href="/recherche/" aria-current={current === 'recherche' ? 'page' : undefined}>Recherche</a>
         <button id="theme-toggle" type="button" aria-label="Changer de thème">◐</button>
       </nav>
     </header>
@@ -72,6 +73,7 @@ const hasTopics = (await getTopics()).length > 0;
           {Object.entries(LABELS).map(([slug, label]) => <a href={`/${slug}/`}>{label}</a>)}
           {hasTopics && <a href="/themes/">Thèmes</a>}
           <a href="/a-propos/">À propos</a>
+          <a href="/recherche/">Recherche</a>
         </div>
         <div class="footer-col">
           <span class="label">Ailleurs</span>
