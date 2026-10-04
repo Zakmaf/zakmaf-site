@@ -1,9 +1,14 @@
 import { execSync } from 'node:child_process';
+import { setDefaultResultOrder } from 'node:dns';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { publish } from './publish.mjs';
 
 const { GHOST_API_URL: API, GHOST_CONTENT_KEY: KEY, YOUTUBE_CHANNEL_ID: YT } = process.env;
 const HEADERS = { 'X-Forwarded-Proto': 'https' };
+
+// Le flux RSS de YouTube répond 404 à certaines adresses IPv4 de serveurs et 200 en IPv6 :
+// IPv6 d'abord quand le conteneur en dispose (bascule automatique sur IPv4 sinon).
+setDefaultResultOrder('ipv6first');
 const INTERVAL = 60_000;
 const YT_EVERY = 15; // vérification YouTube tous les 15 cycles
 
