@@ -26,14 +26,14 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
 });
 ---
 <Base title={post.title} image={post.feature_image} description={post.custom_excerpt ?? post.excerpt}>
-  <article class="narrow">
+  <article class="narrow" data-pagefind-body>
     <header class="post-head">
-      <div class="post-tags">
-        <a class="crumb" href={`/${post.section}/`}>{LABELS[post.section]}</a>
+      <div class="post-tags" data-pagefind-ignore>
+        <a class="crumb" href={`/${post.section}/`} data-pagefind-meta="section">{LABELS[post.section]}</a>
         <TopicChips topics={post.topics} />
       </div>
       <h1>{post.title}</h1>
-      <div class="meta">
+      <div class="meta" data-pagefind-ignore>
         <time datetime={post.published_at}>{date}</time>
         {post.reading_time ? ` · ${post.reading_time} min de lecture` : ''}
       </div>
@@ -48,7 +48,7 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
       <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
     ))}
     {post.toc.length > 0 && (
-      <nav class="toc" aria-labelledby="toc-title">
+      <nav class="toc" aria-labelledby="toc-title" data-pagefind-ignore>
         <details open>
           <summary id="toc-title">Sommaire</summary>
           <ol>
@@ -66,7 +66,7 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
     )}
     <div class="body"><Fragment set:html={post.html} /></div>
     {post.files.length > 0 && (
-      <aside class="files">
+      <aside class="files" data-pagefind-ignore>
         <span class="files-head">Les fichiers de cette vidéo</span>
         {post.files.map((f) => (
           <a class="files-item" href={f.href}>
@@ -79,7 +79,7 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
         ))}
       </aside>
     )}
-    <section class="author" aria-label="L'auteur">
+    <section class="author" aria-label="L'auteur" data-pagefind-ignore>
       {hasPhoto && <img src={AUTHOR.photo} alt="" width="72" height="72" loading="lazy" />}
       <div>
         <p class="author-name"><a href="/a-propos/">{AUTHOR.name}</a></p>

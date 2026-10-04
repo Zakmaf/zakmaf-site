@@ -36,6 +36,7 @@ la mise en production est un nouveau tirage manuel de l'image par le mainteneur.
 | `src/styles/global.css` | Tous les styles : jetons (clair et sombre), puis une partie par zone |
 | `src/pages/` | Accueil, sections (`[section]`), articles (`[section]/[slug]`), thèmes, À propos, RSS |
 | `src/components/` | Liste d'articles (cartes fichier Boilerplate comprises), puces de thèmes |
+| `src/pages/recherche.astro` | Recherche plein texte : index Pagefind produit par `npm run build`, articles seulement (`data-pagefind-body`) |
 | `builder.mjs`, `publish.mjs` | Boucle de reconstruction et publication dans `/out` |
 
 Les trois sections correspondent aux tags Ghost de slug `videos`, `boilerplate` et `blog`

@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Recherche" description="Rechercher dans les articles, vidéos et fichiers Boilerplate.">
+  <section class="narrow search">
+    <header class="post-head">
+      <h1>Recherche</h1>
+    </header>
+    <form class="search-form" action="/recherche/" method="get" role="search">
+      <label class="label" for="search-input">Articles, vidéos, fichiers</label>
+      <input id="search-input" type="search" name="q" autocomplete="off" spellcheck="false" placeholder="ex. compose jellyfin" />
+    </form>
+    <p id="search-status" class="meta" aria-live="polite">
+      <noscript>La recherche nécessite JavaScript ; les sections restent accessibles depuis le menu.</noscript>
+    </p>
+    <ol id="search-results" class="search-results"></ol>
+  </section>
+  <script is:inline type="module">
+    // Index Pagefind généré à la construction et servi par le site (/pagefind/).
+    const input = document.getElementById('search-input');
+    const status = document.getElementById('search-status');
+    const list = document.getElementById('search-results');
+    const pagefind = await import('/pagefind/pagefind.js');
+    await pagefind.options({ excerptLength: 24 });
+    pagefind.init();
+
+    // Extrait : texte et <mark> uniquement, recopiés nœud par nœud.
+    const excerpt = (html) => {
+      const p = document.createElement('p');
+      for (const node of new DOMParser().parseFromString(html, 'text/html').body.childNodes) {
+        if (node.nodeName === 'MARK') {
+          const m = document.createElement('mark');
+          m.textContent = node.textContent;
+          p.append(m);
+        } else {
+          p.append(document.createTextNode(node.textContent));
+        }
+      }
+      return p;
+    };
+
+    async function run(q) {
+      const url = new URL(location.href);
+      if (q) url.searchParams.set('q', q);
+      else url.searchParams.delete('q');
+      history.replaceState(null, '', url);
+      if (!q.trim()) {
+        status.textContent = '';
+        list.replaceChildren();
+        return;
+      }
+      const search = await pagefind.debouncedSearch(q, {}, 200);
+      if (search === null) return;
+      const results = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+      const n = search.results.length;
+      status.textContent = n ? `${n} résultat${n > 1 ? 's' : ''} pour « ${q} »` : `Aucun résultat pour « ${q} »`;
+      list.replaceChildren(
+        ...results.map((r) => {
+          const li = document.createElement('li');
+          const kind = document.createElement('span');
+          kind.className = 'label';
+          kind.textContent = r.meta.section ?? '';
+          const a = document.createElement('a');
+          a.className = 'title';
+          a.href = r.url;
+          a.textContent = r.meta.title ?? r.url;
+          li.append(kind, a, excerpt(r.excerpt));
+          return li;
+        })
+      );
+    }
+
+    input.addEventListener('input', () => run(input.value));
+    input.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      run(input.value);
+    });
+    input.value = new URLSearchParams(location.search).get('q') ?? '';
+    if (input.value) run(input.value);
+    input.focus();
+  </script>
+</Base>
