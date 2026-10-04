@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts, SECTIONS } from '../../lib/ghost.js';
+import { LABELS, INTROS } from '../../lib/site.js';
+// Page 1 en /videos/, les suivantes en /videos/2/, /videos/3/...
+export async function getStaticPaths({ paginate }) {
+  // Articles par page : multiple de 2, 3 et 4 pour remplir les lignes de la grille.
+  // getStaticPaths est isolé du reste du fichier : la constante reste ici.
+  const PAGE_SIZE = 24;
+  const posts = await getPosts();
+  return SECTIONS.flatMap((s) =>
+    paginate(posts.filter((p) => p.section === s), { params: { section: s }, pageSize: PAGE_SIZE }),
+  );
+}
+const { section } = Astro.params;
+const { page } = Astro.props;
+const label = LABELS[section];
+// Astro produit /blog et /blog/2 : barre finale ajoutée pour viser l'URL canonique sans redirection.
+const slash = (url) => url.replace(/\/?$/, '/');
+---
+<Base title={page.currentPage > 1 ? `${label}, page ${page.currentPage}` : label} description={INTROS[section]}>
+  <h1>{label}</h1>
+  <p class="intro">{INTROS[section]}</p>
+  <PostList posts={page.data} />
+  {page.lastPage > 1 && (
+    <nav class="pager" aria-label="Pages">
+      {page.url.prev && <a class="prev" href={slash(page.url.prev)} rel="prev">Articles plus récents</a>}
+      <span class="label">Page {page.currentPage} sur {page.lastPage}</span>
+      {page.url.next && <a class="next" href={slash(page.url.next)} rel="next">Articles plus anciens</a>}
+    </nav>
+  )}
+</Base>
