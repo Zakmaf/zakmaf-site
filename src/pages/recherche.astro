@@ -53,7 +53,7 @@ import Base from '../layouts/Base.astro';
       if (search === null) return;
       const results = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
       const n = search.results.length;
-      status.textContent = n ? `${n} résultat${n > 1 ? 's' : ''} pour « ${q} »` : `Aucun résultat pour « ${q} »`;
+      status.textContent = n ? `${n} résultat${n > 1 ? 's' : ''} pour « ${q} »` : `Rien trouvé pour « ${q} ». Essayez avec un autre mot.`;
       list.replaceChildren(
         ...results.map((r) => {
           const li = document.createElement('li');

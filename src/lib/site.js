@@ -8,8 +8,8 @@ export const SITE = {
 export const LABELS = { videos: 'Vidéos', boilerplate: 'Boilerplate', blog: 'Blog' };
 
 export const INTROS = {
-  videos: 'Les articles qui accompagnent mes vidéos YouTube.',
-  boilerplate: 'Fichiers compose, YAML et JSON documentés, prêts à copier.',
+  videos: "Les articles qui accompagnent chaque vidéo, avec ce qui n'a pas trouvé sa place au montage.",
+  boilerplate: "Les fichiers compose, YAML et JSON montrés à l'écran, documentés et prêts à copier.",
   blog: 'Tout le reste.',
 };
 
