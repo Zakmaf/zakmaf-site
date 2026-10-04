@@ -1,5 +1,5 @@
 ---
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import TopicChips from '../components/TopicChips.astro';
@@ -9,41 +9,30 @@ import { SITE, LABELS, INTROS, AUTHOR, SOCIALS } from '../lib/site.js';
 const posts = await getPosts();
 const topics = await getTopics();
 const hasPhoto = existsSync(`public${AUTHOR.photo}`);
-const yt = existsSync('src/data/youtube.json')
-  ? JSON.parse(readFileSync('src/data/youtube.json', 'utf8'))
-  : null;
-const ytUrl = yt && `https://www.youtube.com/watch?v=${yt.id}`;
-const ytImage = yt?.hasImage ? `/youtube-latest.jpg?v=${yt.id}` : null;
 const channelUrl = SOCIALS.find((s) => s.label === 'YouTube')?.url;
 const fmt = (d) =>
   new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-// À la une : le dernier article Vidéos (sinon le dernier article). Si la dernière vidéo de la
-// chaîne a son article, les deux ne font qu'un ; sinon elle apparaît en tuile « Sur la chaîne ».
+// À la une : le dernier article Vidéos (sinon le dernier article).
 const lead = posts.find((p) => p.section === 'videos') ?? posts[0] ?? null;
-const ytHasPost = yt && posts.some((p) => p.videoId === yt.id);
 const featured = lead
   ? {
       href: `/${lead.section}/${lead.slug}/`,
       title: lead.title,
-      image: lead.feature_image ?? (lead.videoId && lead.videoId === yt?.id ? ytImage : null) ?? `/covers/${lead.section}.svg`,
+      image: lead.feature_image ?? `/covers/${lead.section}.svg`,
       info: lead.feature_image ? lead.feature : null,
       date: lead.published_at,
       kind: lead.videoUrl ? 'Vidéo + article' : LABELS[lead.section],
       play: Boolean(lead.videoUrl),
       videoUrl: lead.videoUrl,
     }
-  : yt
-    ? { href: ytUrl, title: yt.title, image: ytImage, date: yt.published, kind: 'Vidéo', play: true, videoUrl: null }
-    : null;
-const channelTile = yt && lead && !ytHasPost ? yt : null;
+  : null;
 
 // Sections de l'accueil : celles qui ont au moins un article, sans répéter l'article à la une.
 const sections = SECTIONS.map((slug) => ({
   slug,
   posts: posts.filter((p) => p.section === slug && p !== lead).slice(0, 4),
-  tile: slug === 'videos' ? channelTile : null,
-})).filter((s) => s.posts.length > 0 || s.tile);
+})).filter((s) => s.posts.length > 0);
 ---
 <Base description={AUTHOR.bio}>
   <div class="home-top">
@@ -87,16 +76,7 @@ const sections = SECTIONS.map((slug) => ({
         <a href={`/${s.slug}/`}>Tout voir →</a>
       </div>
       <p class="intro">{INTROS[s.slug]}</p>
-      <PostList posts={s.posts}>
-        {s.tile && (
-          <li class="tile">
-            <span class="label">Sur la chaîne</span>
-            <a class="tile-title" href={ytUrl}>{s.tile.title}</a>
-            <span class="meta">{s.tile.published && `${fmt(s.tile.published)} · `}article en préparation</span>
-            <a class="tile-link" href={ytUrl}>Regarder sur YouTube →</a>
-          </li>
-        )}
-      </PostList>
+      <PostList posts={s.posts} />
     </section>
   ))}
   {topics.length > 0 && (

@@ -13,8 +13,7 @@ exposé au public : seul le site statique l'est.
 Chaîne de publication :
 
 1. `builder.mjs` tourne dans le conteneur, sur le serveur. Toutes les 60 s il lit la date
-   de dernière modification des articles et pages (Content API, `limit=1`), et toutes les
-   15 itérations le flux RSS de la chaîne YouTube.
+   de dernière modification des articles et pages (Content API, `limit=1`).
 2. Au moindre changement : `npm run build`, copie des images de Ghost dans
    `dist/content/images` et de leurs variantes WebP dans `dist/content/variants`, puis
    `publish.mjs` remplace le contenu de `/out` sans période de site vide.
@@ -79,8 +78,7 @@ Le dépôt et l'image sont publics, l'historique est permanent.
 - Noms d'hôtes internes, adresses IP, chemins du serveur, adresses e-mail.
 - Fichiers de déploiement réels (compose, reverse proxy, pare-feu, sauvegardes, serveur
   web) et contenu exporté de Ghost.
-- Fichiers générés (`dist/`, `src/data/youtube.json`, `public/ghost/`,
-  `public/youtube-latest.jpg`), ni dans le dépôt ni dans l'image.
+- Fichiers générés (`dist/`, `public/ghost/`, `.cache/`), ni dans le dépôt ni dans l'image.
 
 Toute configuration passe par les variables d'environnement décrites dans le README.
 
