@@ -47,6 +47,23 @@ const date = new Date(post.published_at).toLocaleDateString('fr-FR', {
     ) : (
       <img class="cover" src={post.feature_image} alt="" {...imgProps(post.feature, SIZES.cover)} />
     ))}
+    {post.toc.length > 0 && (
+      <nav class="toc" aria-labelledby="toc-title">
+        <details open>
+          <summary id="toc-title">Sommaire</summary>
+          <ol>
+            {post.toc.map((h) => (
+              <li>
+                <a href={`#${h.id}`}>{h.text}</a>
+                {h.children.length > 0 && (
+                  <ul>{h.children.map((c) => <li><a href={`#${c.id}`}>{c.text}</a></li>)}</ul>
+                )}
+              </li>
+            ))}
+          </ol>
+        </details>
+      </nav>
+    )}
     <div class="body"><Fragment set:html={post.html} /></div>
     {post.files.length > 0 && (
       <aside class="files">

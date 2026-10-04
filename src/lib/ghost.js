@@ -117,6 +117,42 @@ async function codePreview(html) {
   return { lang: LANG_LABELS[lang] ?? lang.toUpperCase(), file: file || null, preview };
 }
 
+// Sommaire : intertitres h2/h3 du contenu, avec une ancre sur chacun (celle de Ghost si
+// elle existe). Affiché à partir de TOC_MIN intertitres.
+const TOC_MIN = 3;
+const HEADING = /<h([23])((?:\s[^>]*)?)>([\s\S]*?)<\/h\1>/g;
+const slugify = (s) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'section';
+
+function outline(html) {
+  const toc = [];
+  const used = new Set();
+  let count = 0;
+  const out = (html || '').replace(HEADING, (tag, level, attrs, inner) => {
+    const text = captionText(inner);
+    let id = attrs.match(/\sid="([^"]+)"/)?.[1];
+    if (!id) {
+      const base = slugify(text);
+      id = base;
+      for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+      attrs = `${attrs} id="${id}"`;
+    }
+    used.add(id);
+    // Un h3 se range sous le h2 qui le précède.
+    const entry = { id, text, children: [] };
+    if (level === '3' && toc.length) toc.at(-1).children.push(entry);
+    else toc.push(entry);
+    count++;
+    return `<h${level}${attrs}>${inner}</h${level}>`;
+  });
+  return { html: out, toc: count >= TOC_MIN ? toc : [] };
+}
+
 function mockPosts(n) {
   const topics = ['Docker Compose', 'Proxmox', 'Traefik', 'sauvegardes Borg', 'réseau Tailscale', 'CrowdSec', 'Jellyfin', 'supervision'];
   return Array.from({ length: n }, (_, i) => ({
@@ -186,10 +222,12 @@ async function prepare(p) {
     .map((t) => ({ slug: t.slug, name: t.name ?? t.slug }));
   // Vidéo du post : première vidéo YouTube citée, uniquement dans la section Vidéos.
   const videoId = section === 'videos' ? ((p.html || '').match(YT)?.[1] ?? null) : null;
+  const { html, toc } = outline(await optimizeHtml(await highlight(unembed(localize(p.html), videoId))));
   return {
     ...p,
     excerpt: p.custom_excerpt || summarize(textOf(p.html)),
-    html: await optimizeHtml(await highlight(unembed(localize(p.html), videoId))),
+    html,
+    toc,
     feature_image: localize(p.feature_image),
     feature: await imageInfo(localize(p.feature_image)),
     section,
